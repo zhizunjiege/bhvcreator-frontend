@@ -1,0 +1,23 @@
+# node_modules
+node_modules/
+
+# build outputs
+dist/
+build/
+
+# temporary files
+tmp/
+temp/
+tmp.*
+temp.*
+*.tmp
+*.temp
+
+# misc files
+misc/
+
+# third party
+3rd/
+
+# static resources
+public/

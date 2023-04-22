@@ -1,0 +1,6 @@
+overrides:
+  - files:
+      - .prettierrc
+      - .eslintrc
+    options:
+      parser: yaml
