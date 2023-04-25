@@ -1,3 +1,5 @@
+import { App } from "vue";
+
 // ruleset table struct
 export type RulesetTable = {
   id: number;
@@ -27,12 +29,39 @@ export type DBTables = {
   compose: ComposeTable;
 };
 
-// Client class used to communicate with the database
-class Client {
-  private addr: string;
+// plugin interface
+export interface Plugin {
+  name: string;
+  version: string;
+  description: string;
 
-  constructor(addr: string) {
-    this.addr = `${addr}/api/db`;
+  menu?: {
+    label: string;
+    to?: string;
+    items?: {
+      label: string;
+      to: string;
+    }[];
+  };
+}
+
+// core class
+export class Core {
+  private addr = "/api";
+
+  public plugins = {} as {
+    [key: string]: Plugin;
+  };
+
+  public provide(name: string, plugin: Plugin) {
+    this.plugins[name] = plugin;
+  }
+
+  public inject(name: string) {
+    if (!this.plugins[name]) {
+      throw new Error(`Plugin ${name} not installed`);
+    }
+    return this.plugins[name];
   }
 
   public async select<T extends keyof DBTables>(
@@ -131,8 +160,38 @@ class Client {
   }
 }
 
-// export client creator
-export function createClient(addr: string) {
-  const client = new Client(addr);
-  return client;
+// core
+let activeCore: Nullable<Core> = null;
+
+const coreSymbol = Symbol("core");
+
+export function createCore(
+  options: {
+    plugins?: {
+      install(core: Core): void;
+    }[];
+  } = {}
+) {
+  const core = new Core();
+  if (options.plugins) {
+    for (const plugin of options.plugins) {
+      plugin.install(core);
+    }
+  }
+  return markRaw({
+    install(app: App) {
+      activeCore = core;
+      app.provide(coreSymbol, core);
+      app.config.globalProperties.$core = core;
+    },
+  });
+}
+
+export function useCore() {
+  const core = getCurrentInstance() && inject(coreSymbol, activeCore);
+  if (!core) {
+    throw new Error("Core not installed");
+  }
+  activeCore = core;
+  return core;
 }

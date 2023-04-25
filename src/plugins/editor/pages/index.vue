@@ -1,6 +1,6 @@
 <template>
   <div class="fit flex flex-center">
-    <h2 class="text-secondary text-weight-bold">Hello World</h2>
+    <h3>规则录入插件</h3>
   </div>
 </template>
 

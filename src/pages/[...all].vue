@@ -9,5 +9,4 @@
 <route lang="yaml">
 meta:
   layout: center
-  full: true
 </route>

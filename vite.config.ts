@@ -1,4 +1,4 @@
-import { resolve } from "path";
+import { resolve, sep } from "path";
 
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
@@ -8,6 +8,8 @@ import Components from "unplugin-vue-components/vite";
 import { QuasarResolver } from "unplugin-vue-components/resolvers";
 import Pages from "vite-plugin-pages";
 import Layouts from "vite-plugin-vue-layouts";
+
+import { globSync } from "glob";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -29,11 +31,18 @@ export default defineConfig({
       deep: true,
     }),
     Pages({
-      dirs: "src/pages",
+      dirs: [
+        { dir: "src/pages", baseRoute: "" },
+        ...globSync("src/plugins/*/pages").map((dir) => ({
+          dir,
+          baseRoute: `home/${dir.split(sep)[2]}`,
+        })),
+      ],
+      extensions: ["vue"],
+      exclude: ["**/comps/*.vue", "**/layouts/*.vue"],
     }),
     Layouts({
       layoutsDirs: ["src/layouts"],
-      defaultLayout: "home",
     }),
   ],
   resolve: {

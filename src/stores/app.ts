@@ -1,11 +1,6 @@
-import { createClient } from "~/api";
-
 export const useAppStore = defineStore("app", {
   state: () => ({
-    systemSettings: {
-      dbAddr: window.location.origin, // address of database server
-    },
-    client: createClient(window.location.origin), // database client
+    systemSettings: {},
   }),
   actions: {
     loadSystemSettings() {
@@ -19,11 +14,6 @@ export const useAppStore = defineStore("app", {
         "systemSettings",
         JSON.stringify(this.systemSettings)
       );
-    },
-
-    setDbAddr(dbAddr: string) {
-      this.systemSettings.dbAddr = dbAddr;
-      this.client = createClient(dbAddr);
     },
   },
 });
