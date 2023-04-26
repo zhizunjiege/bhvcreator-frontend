@@ -4,6 +4,11 @@
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useRuleset } from "..";
+
+const ruleset = useRuleset();
+console.log(ruleset);
+</script>
 
 <style scoped lang="scss"></style>

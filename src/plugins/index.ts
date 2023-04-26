@@ -1,5 +1,5 @@
-import { createEditor } from "./editor";
+import { createRuleset } from "./ruleset";
 
 export function createPlugins() {
-  return [createEditor()];
+  return [createRuleset()];
 }

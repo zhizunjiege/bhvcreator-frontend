@@ -37,7 +37,7 @@ export interface Plugin {
 
   menu?: {
     label: string;
-    to?: string;
+    to: string;
     items?: {
       label: string;
       to: string;

@@ -26,8 +26,8 @@
                     active-class=""
                     :to="
                       plugin.menu.items
-                        ? ``
-                        : `/home/${plugin.name}/${plugin.menu.to}`
+                        ? ''
+                        : resolve('/home', plugin.name, plugin.menu.to)
                     "
                   >
                     <q-item-section>{{ plugin.menu.label }}</q-item-section>
@@ -46,7 +46,7 @@
                             :key="item.label"
                             v-ripple
                             clickable
-                            :to="`/home/${plugin.name}/${item.to}`"
+                            :to="resolve('/home', plugin.name, item.to)"
                             active-class=""
                           >
                             <q-item-section>{{ item.label }}</q-item-section>
@@ -93,6 +93,7 @@
 </template>
 
 <script setup lang="ts">
+import { resolve } from "path-browserify";
 import Logo from "~/assets/logo.png";
 import { useCore } from "~/core";
 
