@@ -1,5 +1,5 @@
-import { createRuleset } from "./ruleset";
+import { createRuleSet } from "./ruleset";
 
 export function createPlugins() {
-  return [createRuleset()];
+  return [createRuleSet()];
 }

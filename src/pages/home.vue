@@ -12,8 +12,8 @@
             <q-icon name="bi-caret-down-fill" size="1rem" class="q-ml-lg" />
             <q-menu
               fit
-              self="top left"
               anchor="bottom left"
+              self="top left"
               class="bg-secondary text-subtitle2"
             >
               <q-list dense>
@@ -36,8 +36,8 @@
                         <q-icon name="bi-chevron-right" size="xs" />
                       </q-item-section>
                       <q-menu
-                        self="top start"
                         anchor="top end"
+                        self="top start"
                         class="bg-secondary text-subtitle2"
                       >
                         <q-list dense>
@@ -69,7 +69,7 @@
             round
             :icon="$q.dark.isActive ? 'bi-moon' : 'bi-sun'"
             size="sm"
-            class="float-right q-mx-sm ui-btn"
+            class="float-right q-mx-sm ui-clickable"
             @click="$q.dark.toggle"
           >
             <q-tooltip anchor="bottom left" self="top middle">
@@ -114,24 +114,7 @@ const core = useCore();
 <style scoped lang="scss"></style>
 
 <style lang="scss">
-.ui-card {
-  width: 50%;
-}
-.ui-table {
-  table {
-    table-layout: fixed;
-  }
-  td {
-    font-size: 0.875rem !important;
-    padding: 0.5rem 1.5rem !important;
-    border-color: var(--ui-secondary) !important;
-  }
-}
-.ui-input {
-  float: right;
-  width: 75%;
-}
-.ui-btn:not([disabled="true"]) {
+.ui-clickable:not([disabled="true"]) {
   cursor: pointer;
   &:hover {
     color: var(--ui-accent);
