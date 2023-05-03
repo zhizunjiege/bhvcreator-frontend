@@ -20,9 +20,8 @@
             <q-input
               v-model="filter"
               dense
+              filled
               debounce="500"
-              standout="bg-ignore"
-              input-class="text-foreground"
               placeholder="搜索"
               class="full-width"
             >
@@ -69,6 +68,7 @@
               size="sm"
               icon="bi-save"
               class="bg-secondary ui-clickable"
+              @click="save"
             >
               <q-tooltip self="center middle" anchor="top left">
                 保存
@@ -91,8 +91,7 @@
                         <q-input
                           v-model="store.ruleset.name"
                           dense
-                          standout="bg-secondary"
-                          input-class="text-foreground"
+                          filled
                           class="full-width"
                         />
                       </td>
@@ -103,8 +102,7 @@
                         <q-input
                           v-model="store.ruleset.version"
                           dense
-                          standout="bg-secondary"
-                          input-class="text-foreground"
+                          filled
                           class="full-width"
                         />
                       </td>
@@ -115,9 +113,8 @@
                         <q-input
                           v-model="store.ruleset.createTime"
                           dense
+                          filled
                           disable
-                          standout="bg-secondary"
-                          input-class="text-foreground"
                           class="full-width"
                         />
                       </td>
@@ -128,9 +125,8 @@
                         <q-input
                           v-model="store.ruleset.updateTime"
                           dense
+                          filled
                           disable
-                          standout="bg-secondary"
-                          input-class="text-foreground"
                           class="full-width"
                         />
                       </td>
@@ -141,11 +137,10 @@
                         <q-input
                           v-model="store.ruleset.desc"
                           dense
+                          filled
                           autogrow
                           clearable
                           type="textarea"
-                          standout="bg-secondary"
-                          input-class="text-foreground"
                           class="full-width"
                         />
                       </td>
@@ -198,16 +193,13 @@
 
 <script setup lang="ts">
 import { QTree } from "quasar";
-import { useCore } from "~/core";
-import { useRuleSet } from "..";
 import { useRuleSetStore } from "../stores";
 
 import rParams from "./comps/r-params.vue";
 import rSubsets from "./comps/r-subsets.vue";
 import rRules from "./comps/r-rules.vue";
 
-const core = useCore();
-const plugin = useRuleSet();
+const $q = useQuasar();
 const store = useRuleSetStore();
 
 const percent = ref(15);
@@ -217,6 +209,30 @@ const nodes = computed(() => [store.ruleset]);
 const selected = ref(store.ruleset.id);
 const tree = ref(null as Nullable<QTree>);
 const node = computed(() => tree.value?.getNodeByKey(selected.value));
+
+async function save() {
+  const result = store.validate();
+  if (result) {
+    try {
+      await store.save();
+      $q.notify({
+        type: "positive",
+        message: "保存成功",
+      });
+    } catch (e) {
+      $q.notify({
+        type: "negative",
+        message: "保存失败：" + e,
+      });
+      console.error(e);
+    }
+  } else {
+    $q.notify({
+      type: "negative",
+      message: "校验失败：" + result,
+    });
+  }
+}
 </script>
 
 <style scoped lang="scss">

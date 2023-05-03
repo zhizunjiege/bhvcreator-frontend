@@ -1,5 +1,6 @@
+import { useCore } from "~/core";
 import { getTimestampString } from "~/utils";
-import { RuleSet } from "..";
+import { RuleSet, useRuleSet } from "..";
 
 export interface RuleSetAttr {
   id: number;
@@ -100,5 +101,33 @@ export const useRuleSetStore = defineStore("ruleset", {
       ],
     } as RuleSet & RuleSetAttr,
   }),
-  actions: {},
+  actions: {
+    validate() {
+      return true;
+    },
+    async save() {
+      const core = useCore();
+      const plugin = useRuleSet();
+      const xml = plugin.buildRuleSet({
+        typeDefines: this.ruleset.typeDefines,
+        funcDefines: this.ruleset.funcDefines,
+        metaInfo: this.ruleset.metaInfo,
+        subSets: this.ruleset.subSets,
+        rules: this.ruleset.rules,
+      });
+      const res = await core.replace("ruleset", {
+        id: this.ruleset.id,
+        name: this.ruleset.name,
+        version: this.ruleset.version,
+        description: this.ruleset.desc,
+        mode: "normal",
+        xml,
+      });
+      if (this.ruleset.id === 0) {
+        this.ruleset.id = res.lastrowid;
+        this.ruleset.createTime = getTimestampString();
+      }
+      this.ruleset.updateTime = getTimestampString();
+    },
+  },
 });

@@ -4,6 +4,7 @@ import { App } from "vue";
 export type RulesetTable = {
   id: number;
   name: string;
+  version: string;
   description: string;
   create_time?: string;
   update_time?: string;
@@ -15,6 +16,7 @@ export type RulesetTable = {
 export type ComposeTable = {
   id: number;
   name: string;
+  version: string;
   description: string;
   create_time?: string;
   update_time?: string;
@@ -72,7 +74,7 @@ export class Core {
     const colArgs = columns.map((v) => `columns=${v as string}`);
     const optArgs = Object.entries(options).map(([k, v]) => `${k}=${v}`);
     const args = [...colArgs, ...optArgs].join("&");
-    const response = await fetch(`${this.addr}/${table}?${args}`, {
+    const response = await fetch(`${this.addr}/db/${table}?${args}`, {
       method: "GET",
     });
     if (response.ok) {
@@ -88,7 +90,7 @@ export class Core {
     data: DBTables[T]
   ): Promise<{ lastrowid: number }> {
     const row = { ...data } as DBTables[T];
-    const response = await fetch(`${this.addr}/${table}`, {
+    const response = await fetch(`${this.addr}/db/${table}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -107,7 +109,7 @@ export class Core {
     data: Partial<DBTables[T]>
   ): Promise<{ rowcount: number }> {
     const row = { ...data } as DBTables[T];
-    const response = await fetch(`${this.addr}/${table}`, {
+    const response = await fetch(`${this.addr}/db/${table}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -145,7 +147,7 @@ export class Core {
     table: T,
     ids: number[]
   ): Promise<{ rowcount: number }> {
-    const response = await fetch(`${this.addr}/${table}`, {
+    const response = await fetch(`${this.addr}/db/${table}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -188,7 +190,8 @@ export function createCore(
 }
 
 export function useCore() {
-  const core = getCurrentInstance() && inject(coreSymbol, activeCore);
+  const core: Nullable<Core> =
+    (getCurrentInstance() && inject(coreSymbol)) || activeCore;
   if (!core) {
     throw new Error("Core not installed");
   }

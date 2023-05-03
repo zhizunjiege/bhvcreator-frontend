@@ -15,17 +15,16 @@
               <td>
                 <q-select
                   v-model="condition.join"
-                  dense
-                  standout="bg-secondary"
-                  input-class="text-foreground"
-                  class="full-width"
-                  options-dense
-                  map-options
-                  :options-dense-label="false"
                   :options="[
                     { label: '与', value: 'and' },
                     { label: '或', value: 'or' },
                   ]"
+                  dense
+                  filled
+                  emit-value
+                  map-options
+                  options-dense
+                  class="full-width"
                 />
               </td>
             </tr>
@@ -48,11 +47,6 @@
               {{ scope.col.label }}
             </q-th>
           </template>
-          <template #body-cell="scope">
-            <q-td :props="scope">
-              <q-input v-model="scope.row[scope.col.field]" dense borderless />
-            </q-td>
-          </template>
           <template #body-cell-index="scope">
             <q-td :props="scope">
               {{ scope.rowIndex + 1 }}
@@ -60,62 +54,20 @@
           </template>
           <template #body-cell-value="scope">
             <q-td :props="scope" colspan="4">
-              <q-input v-model="scope.row[scope.col.field]" dense borderless />
+              <q-input
+                v-model="condition.expressions[scope.rowIndex]"
+                dense
+                borderless
+              />
             </q-td>
           </template>
-          <template #body-cell-acts="scope">
+          <template #body-cell-actions="scope">
             <q-td :props="scope">
-              <q-btn
-                :disable="scope.rowIndex === 0"
-                flat
-                round
-                size="sm"
-                icon="bi-arrow-up-circle"
-                class="q-mx-xs ui-clickable"
-                @click="up(scope.rowIndex)"
-              >
-                <q-tooltip anchor="top middle" self="bottom middle">
-                  上移
-                </q-tooltip>
-              </q-btn>
-              <q-btn
-                :disable="scope.rowIndex === condition.expressions.length - 1"
-                flat
-                round
-                size="sm"
-                icon="bi-arrow-down-circle"
-                class="q-mx-xs ui-clickable"
-                @click="down(scope.rowIndex)"
-              >
-                <q-tooltip anchor="top middle" self="bottom middle">
-                  下移
-                </q-tooltip>
-              </q-btn>
-              <q-btn
-                flat
-                round
-                size="sm"
-                icon="bi-files"
-                class="q-mx-xs ui-clickable"
-                @click="copy(scope.rowIndex)"
-              >
-                <q-tooltip anchor="top middle" self="bottom middle">
-                  重复
-                </q-tooltip>
-              </q-btn>
-              <q-btn
-                :disable="constraint"
-                flat
-                round
-                size="sm"
-                icon="bi-trash"
-                class="q-mx-xs ui-clickable"
-                @click="drop(scope.rowIndex)"
-              >
-                <q-tooltip anchor="top middle" self="bottom middle">
-                  删除
-                </q-tooltip>
-              </q-btn>
+              <r-actions-cell
+                v-model="condition.expressions"
+                :row-index="scope.rowIndex"
+                @update:model-value="update"
+              />
             </q-td>
           </template>
           <template #no-data="scope">
@@ -125,20 +77,11 @@
             </div>
           </template>
         </q-table>
-        <div class="full-width flex justify-end q-mt-md">
-          <q-btn
-            flat
-            round
-            size="sm"
-            icon="bi-plus-circle"
-            class="ui-clickable"
-            @click="push"
-          >
-            <q-tooltip anchor="top middle" self="bottom middle">
-              添加
-            </q-tooltip>
-          </q-btn>
-        </div>
+        <r-actions-push
+          v-model="condition.expressions"
+          :template="'true'"
+          @update:model-value="update"
+        />
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -146,8 +89,10 @@
 
 <script setup lang="ts">
 import { QTableColumn } from "quasar";
-import { deepCopy } from "~/utils";
 import { Condition } from "../..";
+
+import rActionsCell from "./r-actions-cell.vue";
+import rActionsPush from "./r-actions-push.vue";
 
 const props = defineProps<{
   modelValue: Condition;
@@ -158,12 +103,11 @@ const emits = defineEmits<{
 }>();
 
 const condition = computed(() => props.modelValue);
-const constraint = computed(() => condition.value.expressions.length === 1);
 
 const expressionColumns = [
   { name: "index", label: "序号", field: "", align: "center" },
   { name: "value", label: "取值", field: (r) => r, align: "center" },
-  { name: "acts", label: "操作", field: "", align: "center" },
+  { name: "actions", label: "操作", field: "", align: "center" },
 ] as QTableColumn[];
 
 const dialogShow = ref(false);
@@ -181,40 +125,6 @@ const displayText = computed(() => {
 
 function update() {
   emits("update:modelValue", condition.value);
-}
-
-function push() {
-  condition.value.expressions.push("true");
-  update();
-}
-
-function up(index: number) {
-  const arr = condition.value.expressions;
-  if (index > 0) {
-    const temp = arr[index];
-    arr[index] = arr[index - 1];
-    arr[index - 1] = temp;
-    update();
-  }
-}
-function down(index: number) {
-  const arr = condition.value.expressions;
-  if (index < arr.length - 1) {
-    const temp = arr[index];
-    arr[index] = arr[index + 1];
-    arr[index + 1] = temp;
-    update();
-  }
-}
-function copy(index: number) {
-  const arr = condition.value.expressions;
-  arr.splice(index + 1, 0, deepCopy(arr[index]));
-  update();
-}
-function drop(index: number) {
-  const arr = condition.value.expressions;
-  arr.splice(index, 1);
-  update();
 }
 </script>
 
