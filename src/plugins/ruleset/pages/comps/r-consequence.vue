@@ -1,172 +1,342 @@
 <template>
-  <q-markup-table flat separator="cell" class="text-center table">
-    <thead>
-      <tr>
-        <th>子集名称</th>
-        <th>前置条件</th>
-        <th>合并方式</th>
-        <th>子集描述</th>
-        <th>子集操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="(subSet, index) in subSets" :key="subSet.id">
-        <td>
-          <q-input v-model="subSet.name" dense borderless />
-        </td>
-        <td>
-          <q-btn
-            flat
-            round
-            size="sm"
-            icon="bi-pencil-square"
-            class="q-mx-xs ui-btn"
-            @click="edit(index)"
-          >
-            <q-tooltip anchor="top left" self="top right"> 编辑 </q-tooltip>
-          </q-btn>
-        </td>
-        <td>
-          <q-input v-model="subSet.condition.join" dense borderless />
-          <!-- <q-select
-            v-model="subSet.condition.join"
-            :options="['and', 'or']"
-            dense
-            borderless
-            emit-value
-            map-options
-            hide-dropdown-icon
-            popup-content-class="shadow-0 bg-primary"
-            options-selected-class="text-accent"
-          /> -->
-        </td>
-        <td>
-          <q-input v-model="subSet.desc" dense borderless />
-        </td>
-        <td>
-          <q-btn
-            flat
-            round
-            size="sm"
-            icon="bi-files"
-            class="q-mx-xs ui-btn"
-            @click="copy(index)"
-          >
-            <q-tooltip anchor="top left" self="top right"> 重复 </q-tooltip>
-          </q-btn>
-          <q-btn
-            flat
-            round
-            size="sm"
-            icon="bi-arrow-up-circle"
-            class="q-mx-xs ui-btn"
-            @click="up(index)"
-          >
-            <q-tooltip anchor="top left" self="top right"> 上移 </q-tooltip>
-          </q-btn>
-          <q-btn
-            flat
-            round
-            size="sm"
-            icon="bi-arrow-down-circle"
-            class="q-mx-xs ui-btn"
-            @click="down(index)"
-          >
-            <q-tooltip anchor="top left" self="top right"> 下移 </q-tooltip>
-          </q-btn>
-          <q-btn
-            flat
-            round
-            size="sm"
-            icon="bi-trash"
-            class="q-mx-xs ui-btn"
-            @click="drop(index)"
-          >
-            <q-tooltip anchor="top left" self="top right"> 删除 </q-tooltip>
-          </q-btn>
-        </td>
-      </tr>
-    </tbody>
-  </q-markup-table>
-  <div class="full-width flex justify-end q-mt-md">
-    <q-btn
-      flat
-      round
-      size="sm"
-      icon="bi-plus-circle"
-      class="ui-btn"
-      @click="push"
-    >
-      <q-tooltip anchor="top left" self="top right"> 新增 </q-tooltip>
-    </q-btn>
+  <div class="full-width ellipsis" @click="dialogShow = true">
+    {{ displayText }}
   </div>
+  <q-dialog v-model="dialogShow">
+    <q-card flat class="q-mx-auto bg-secondary r-card">
+      <q-card-section class="text-center text-subtitle1">
+        {{ props.title }}
+      </q-card-section>
+      <q-card-section>
+        <p class="text-subtitle2">赋值操作</p>
+        <q-table
+          :rows="assignments"
+          :columns="assignmentColumns"
+          :pagination="{ rowsPerPage: 0 }"
+          flat
+          hide-pagination
+          separator="cell"
+          table-class="r-table"
+          table-header-class="bg-primary"
+        >
+          <template #header-cell-value="scope">
+            <q-th :props="scope" colspan="3">
+              {{ scope.col.label }}
+            </q-th>
+          </template>
+          <template #body-cell="scope">
+            <q-td :props="scope">
+              <q-input v-model="scope.row[scope.col.field]" dense borderless />
+            </q-td>
+          </template>
+          <template #body-cell-index="scope">
+            <q-td :props="scope">
+              {{ scope.rowIndex + 1 }}
+            </q-td>
+          </template>
+          <template #body-cell-value="scope">
+            <q-td :props="scope" colspan="3">
+              <q-input v-model="scope.row[scope.col.field]" dense borderless />
+            </q-td>
+          </template>
+          <template #body-cell-acts="scope">
+            <q-td :props="scope">
+              <q-btn
+                :disable="scope.rowIndex === 0"
+                flat
+                round
+                size="sm"
+                icon="bi-arrow-up-circle"
+                class="q-mx-xs ui-clickable"
+                @click="up('assignments', scope.rowIndex)"
+              >
+                <q-tooltip anchor="top middle" self="bottom middle">
+                  上移
+                </q-tooltip>
+              </q-btn>
+              <q-btn
+                :disable="scope.rowIndex === assignments.length - 1"
+                flat
+                round
+                size="sm"
+                icon="bi-arrow-down-circle"
+                class="q-mx-xs ui-clickable"
+                @click="down('assignments', scope.rowIndex)"
+              >
+                <q-tooltip anchor="top middle" self="bottom middle">
+                  下移
+                </q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                round
+                size="sm"
+                icon="bi-files"
+                class="q-mx-xs ui-clickable"
+                @click="copy('assignments', scope.rowIndex)"
+              >
+                <q-tooltip anchor="top middle" self="bottom middle">
+                  重复
+                </q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                round
+                size="sm"
+                icon="bi-trash"
+                class="q-mx-xs ui-clickable"
+                @click="drop('assignments', scope.rowIndex)"
+              >
+                <q-tooltip anchor="top middle" self="bottom middle">
+                  删除
+                </q-tooltip>
+              </q-btn>
+            </q-td>
+          </template>
+          <template #no-data="scope">
+            <div class="flex flex-center full-width text-subtitle2">
+              <q-icon :name="scope.icon" size="xs" class="q-mr-md" />
+              列表为空
+            </div>
+          </template>
+        </q-table>
+        <div class="full-width flex justify-end q-mt-md">
+          <q-btn
+            flat
+            round
+            size="sm"
+            icon="bi-plus-circle"
+            class="ui-clickable"
+            @click="push('assignments')"
+          >
+            <q-tooltip anchor="top middle" self="bottom middle">
+              添加
+            </q-tooltip>
+          </q-btn>
+        </div>
+      </q-card-section>
+      <q-card-section>
+        <p class="text-subtitle2">数组操作</p>
+        <q-table
+          :rows="operations"
+          :columns="operationColumns"
+          :pagination="{ rowsPerPage: 0 }"
+          flat
+          hide-pagination
+          separator="cell"
+          table-class="r-table"
+          table-header-class="bg-primary"
+        >
+          <template #header-cell-args="scope">
+            <q-th :props="scope" colspan="2">
+              {{ scope.col.label }}
+            </q-th>
+          </template>
+          <template #body-cell="scope">
+            <q-td :props="scope">
+              <q-input v-model="scope.row[scope.col.field]" dense borderless />
+            </q-td>
+          </template>
+          <template #body-cell-index="scope">
+            <q-td :props="scope">
+              {{ scope.rowIndex + 1 }}
+            </q-td>
+          </template>
+          <template #body-cell-args="scope">
+            <q-td :props="scope" colspan="2">
+              <q-input v-model="scope.row[scope.col.field]" dense borderless />
+            </q-td>
+          </template>
+          <template #body-cell-acts="scope">
+            <q-td :props="scope">
+              <q-btn
+                :disable="scope.rowIndex === 0"
+                flat
+                round
+                size="sm"
+                icon="bi-arrow-up-circle"
+                class="q-mx-xs ui-clickable"
+                @click="up('operations', scope.rowIndex)"
+              >
+                <q-tooltip anchor="top middle" self="bottom middle">
+                  上移
+                </q-tooltip>
+              </q-btn>
+              <q-btn
+                :disable="scope.rowIndex === operations.length - 1"
+                flat
+                round
+                size="sm"
+                icon="bi-arrow-down-circle"
+                class="q-mx-xs ui-clickable"
+                @click="down('operations', scope.rowIndex)"
+              >
+                <q-tooltip anchor="top middle" self="bottom middle">
+                  下移
+                </q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                round
+                size="sm"
+                icon="bi-files"
+                class="q-mx-xs ui-clickable"
+                @click="copy('operations', scope.rowIndex)"
+              >
+                <q-tooltip anchor="top middle" self="bottom middle">
+                  重复
+                </q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                round
+                size="sm"
+                icon="bi-trash"
+                class="q-mx-xs ui-clickable"
+                @click="drop('operations', scope.rowIndex)"
+              >
+                <q-tooltip anchor="top middle" self="bottom middle">
+                  删除
+                </q-tooltip>
+              </q-btn>
+            </q-td>
+          </template>
+          <template #no-data="scope">
+            <div class="flex flex-center full-width text-subtitle2">
+              <q-icon :name="scope.icon" size="xs" class="q-mr-md" />
+              列表为空
+            </div>
+          </template>
+        </q-table>
+        <div class="full-width flex justify-end q-mt-md">
+          <q-btn
+            flat
+            round
+            size="sm"
+            icon="bi-plus-circle"
+            class="ui-clickable"
+            @click="push('operations')"
+          >
+            <q-tooltip anchor="top middle" self="bottom middle">
+              添加
+            </q-tooltip>
+          </q-btn>
+        </div>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
-import { randomString } from "~/utils";
-import { SubSet } from "..";
+import { QTableColumn } from "quasar";
+import { deepCopy } from "~/utils";
+import { Consequence } from "../..";
 
 const props = defineProps<{
-  subSets: SubSet[];
+  modelValue: Consequence;
+  title: string;
 }>();
 const emits = defineEmits<{
-  (e: "update:subSets", subSets: SubSet[]): void;
+  (e: "update:modelValue", modelValue: Consequence): void;
 }>();
 
-const subSets = ref(props.subSets);
-watch(
-  () => props.subSets,
-  (val) => {
-    subSets.value = val;
+const consequence = computed(() => props.modelValue);
+const assignments = computed(() => props.modelValue.assignments);
+const operations = computed(() => props.modelValue.operations);
+
+const assignmentColumns = [
+  { name: "index", label: "序号", field: "", align: "center" },
+  { name: "target", label: "目标", field: "target", align: "center" },
+  { name: "value", label: "取值", field: "value", align: "center" },
+  { name: "acts", label: "操作", field: "", align: "center" },
+] as QTableColumn[];
+const operationColumns = [
+  { name: "index", label: "序号", field: "", align: "center" },
+  { name: "target", label: "目标", field: "target", align: "center" },
+  { name: "schema", label: "模式", field: "operation", align: "center" },
+  { name: "args", label: "参数", field: "args", align: "center" },
+  { name: "acts", label: "操作", field: "", align: "center" },
+] as QTableColumn[];
+
+const dialogShow = ref(false);
+const displayText = computed(() => {
+  if (assignments.value.length + operations.value.length > 0) {
+    const a = assignments.value.map((e) => `${e.target} = ${e.value}`);
+    const o = operations.value.map(
+      (e) => `${e.target}.${e.operation}(${e.args})`
+    );
+    return a.concat(o).join("; ");
+  } else {
+    return "无";
   }
-);
+});
 
-function edit(index: number) {}
-
-function copy(index: number) {
-  subSets.value.splice(index + 1, 0, { ...subSets.value[index] });
-  emits("update:subSets", subSets.value);
+function update() {
+  emits("update:modelValue", consequence.value);
 }
-function up(index: number) {
+
+type Target = keyof Consequence;
+
+function push(target: Target) {
+  switch (target) {
+    case "assignments":
+      assignments.value.push({
+        target: "",
+        value: "",
+      });
+      break;
+    case "operations":
+      operations.value.push({
+        target: "",
+        operation: "",
+        args: "",
+      });
+      break;
+    default:
+      break;
+  }
+  update();
+}
+
+function up(target: Target, index: number) {
+  const arr = consequence.value[target];
   if (index > 0) {
-    const temp = subSets.value[index];
-    subSets.value[index] = subSets.value[index - 1];
-    subSets.value[index - 1] = temp;
-    emits("update:subSets", subSets.value);
+    const temp = arr[index];
+    arr[index] = arr[index - 1];
+    arr[index - 1] = temp;
+    update();
   }
 }
-function down(index: number) {
-  if (index < subSets.value.length - 1) {
-    const temp = subSets.value[index];
-    subSets.value[index] = subSets.value[index + 1];
-    subSets.value[index + 1] = temp;
-    emits("update:subSets", subSets.value);
+function down(target: Target, index: number) {
+  const arr = consequence.value[target];
+  if (index < arr.length - 1) {
+    const temp = arr[index];
+    arr[index] = arr[index + 1];
+    arr[index + 1] = temp;
+    update();
   }
 }
-function drop(index: number) {
-  subSets.value.splice(index, 1);
-  emits("update:subSets", subSets.value);
+function copy(target: Target, index: number) {
+  const arr = consequence.value[target] as (
+    | Consequence["assignments"][0]
+    | Consequence["operations"][0]
+  )[];
+  arr.splice(index + 1, 0, deepCopy(arr[index]));
+  update();
 }
-
-function push() {
-  subSets.value.push({
-    id: randomString(8),
-    name: "未命名子集",
-    condition: {
-      join: "and",
-      expressions: ["true"],
-    },
-    desc: "未命名子集",
-    subSets: [],
-    rules: [],
-  });
-  emits("update:subSets", subSets.value);
+function drop(target: Target, index: number) {
+  const arr = consequence.value[target];
+  arr.splice(index, 1);
+  update();
 }
 </script>
 
 <style scoped lang="scss">
-.table {
-  :deep(table) {
+.r-card {
+  max-width: 60%;
+}
+:deep(.r-table) {
+  table {
     table-layout: fixed;
     th,
     td {

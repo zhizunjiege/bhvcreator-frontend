@@ -9,9 +9,24 @@ export interface Parameter {
   name: string;
   type: string;
 }
+export interface MetaParam extends Parameter {
+  desc: string;
+  value: string;
+}
 export interface Condition {
   join: "and" | "or";
   expressions: string[];
+}
+export interface Consequence {
+  assignments: {
+    target: string;
+    value: string;
+  }[];
+  operations: {
+    target: string;
+    operation: string;
+    args: string;
+  }[];
 }
 export interface TypeDefine {
   type: string;
@@ -26,26 +41,12 @@ export interface FuncDefine {
     value: string;
   };
 }
-export interface MetaParam extends Parameter {
-  desc: string;
-  value: string;
-}
 export interface Rule {
   id: string;
   name: string;
   desc: string;
   condition: Condition;
-  consequence: {
-    assignments: {
-      target: string;
-      value: string;
-    }[];
-    operations: {
-      target: string;
-      operation: string;
-      args: string;
-    }[];
-  };
+  consequence: Consequence;
 }
 export interface SubSet {
   id: string;
@@ -73,9 +74,24 @@ type XmlParameter = {
   "@name": string;
   "@type": string;
 };
+type XmlMetaParam = XmlParameter & {
+  "@desc": string;
+  Value: string;
+};
 type XmlCondition = {
   "@join": "and" | "or";
   Expression: string[];
+};
+type XmlConsequence = {
+  Assignment: {
+    Target: string;
+    Value: string;
+  }[];
+  ArrayOperation: {
+    Target: string;
+    Operation: string;
+    Args: string;
+  }[];
 };
 type XmlTypeDefine = {
   "@type": string;
@@ -92,28 +108,12 @@ type XmlFuncDefine = {
     Value: string;
   };
 };
-type XmlMetaParam = {
-  "@name": string;
-  "@type": string;
-  "@desc": string;
-  Value: string;
-};
 type XmlRule = {
   "@id": string;
   "@name": string;
   "@desc": string;
   Condition: XmlCondition;
-  Consequence: {
-    Assignment: {
-      Target: string;
-      Value: string;
-    }[];
-    ArrayOperation: {
-      Target: string;
-      Operation: string;
-      Args: string;
-    }[];
-  };
+  Consequence: XmlConsequence;
 };
 type XmlSubSet = {
   "@id": string;
@@ -170,10 +170,30 @@ class RuleSetPlugin implements Plugin {
       "@type": param.type,
     };
   }
+  private buildMetaParam(param: MetaParam): XmlMetaParam {
+    return {
+      ...this.buildParameter(param),
+      "@desc": param.desc,
+      Value: param.value,
+    };
+  }
   private buildCondition(condition: Condition): XmlCondition {
     return {
       "@join": condition.join,
       Expression: condition.expressions,
+    };
+  }
+  private buildConsequence(consequence: Consequence): XmlConsequence {
+    return {
+      Assignment: consequence.assignments.map((item) => ({
+        Target: item.target,
+        Value: item.value,
+      })),
+      ArrayOperation: consequence.operations.map((item) => ({
+        Target: item.target,
+        Operation: item.operation,
+        Args: item.args,
+      })),
     };
   }
   private buildTypeDefine(typeDefine: TypeDefine): XmlTypeDefine {
@@ -195,31 +215,13 @@ class RuleSetPlugin implements Plugin {
       },
     };
   }
-  private buildMetaParam(param: MetaParam): XmlMetaParam {
-    return {
-      "@name": param.name,
-      "@type": param.type,
-      "@desc": param.desc,
-      Value: param.value,
-    };
-  }
   private buildRule(rule: Rule): XmlRule {
     return {
       "@id": rule.id,
       "@name": rule.name,
       "@desc": rule.desc,
       Condition: this.buildCondition(rule.condition),
-      Consequence: {
-        Assignment: rule.consequence.assignments.map((item) => ({
-          Target: item.target,
-          Value: item.value,
-        })),
-        ArrayOperation: rule.consequence.operations.map((item) => ({
-          Target: item.target,
-          Operation: item.operation,
-          Args: item.args,
-        })),
-      },
+      Consequence: this.buildConsequence(rule.consequence),
     };
   }
   private buildSubSet(subSet: SubSet): XmlSubSet {
@@ -282,10 +284,30 @@ class RuleSetPlugin implements Plugin {
       type: param["@type"],
     };
   }
+  private parseMetaParam(param: XmlMetaParam): MetaParam {
+    return {
+      ...this.parseParameter(param),
+      desc: param["@desc"],
+      value: param.Value,
+    };
+  }
   private parseCondition(condition: XmlCondition): Condition {
     return {
       join: condition["@join"],
       expressions: condition.Expression,
+    };
+  }
+  private parseConsequence(consequence: XmlConsequence): Consequence {
+    return {
+      assignments: consequence.Assignment.map((item) => ({
+        target: item.Target,
+        value: item.Value,
+      })),
+      operations: consequence.ArrayOperation.map((item) => ({
+        target: item.Target,
+        operation: item.Operation,
+        args: item.Args,
+      })),
     };
   }
   private parseTypeDefine(typeDefine: XmlTypeDefine): TypeDefine {
@@ -305,32 +327,13 @@ class RuleSetPlugin implements Plugin {
       },
     };
   }
-  private parseMetaParam(param: XmlMetaParam): MetaParam {
-    return {
-      name: param["@name"],
-      type: param["@type"],
-      desc: param["@desc"],
-      value: param.Value,
-    };
-  }
   private parseRule(rule: XmlRule): Rule {
     return {
       id: rule["@id"],
       name: rule["@name"],
       desc: rule["@desc"],
       condition: this.parseCondition(rule.Condition),
-      consequence: {
-        assignments: rule.Consequence.Assignment.map((item) => ({
-          target: item.Target,
-          value: item.Value,
-        })),
-        operations:
-          rule.Consequence.ArrayOperation?.map((item) => ({
-            target: item.Target,
-            operation: item.Operation,
-            args: item.Args,
-          })) ?? [],
-      },
+      consequence: this.parseConsequence(rule.Consequence),
     };
   }
   private parseSubSet(subSet: XmlSubSet): SubSet {
@@ -339,7 +342,7 @@ class RuleSetPlugin implements Plugin {
       name: subSet["@name"],
       desc: subSet["@desc"],
       condition: this.parseCondition(subSet.Condition),
-      subSets: subSet.SubSets.SubSet?.map(this.parseSubSet.bind(this)) ?? [],
+      subSets: subSet.SubSets.SubSet.map(this.parseSubSet.bind(this)),
       rules: subSet.Rules.Rule.map(this.parseRule.bind(this)),
     };
   }

@@ -40,7 +40,7 @@ export const useRuleSetStore = defineStore("ruleset", {
         {
           id: "sjhkj699",
           name: "未命名子集",
-          desc: "",
+          desc: "未命名子集",
           condition: {
             join: "and",
             expressions: ["true"],
@@ -49,7 +49,7 @@ export const useRuleSetStore = defineStore("ruleset", {
             {
               id: "hj6789hk",
               name: "未命名子集",
-              desc: "",
+              desc: "未命名子集",
               condition: {
                 join: "and",
                 expressions: ["true"],
@@ -60,7 +60,7 @@ export const useRuleSetStore = defineStore("ruleset", {
             {
               id: "gja87dd3",
               name: "未命名子集",
-              desc: "",
+              desc: "未命名子集",
               condition: {
                 join: "and",
                 expressions: ["true"],
@@ -72,7 +72,32 @@ export const useRuleSetStore = defineStore("ruleset", {
           rules: [],
         },
       ],
-      rules: [],
+      rules: [
+        {
+          id: "hj6789hk",
+          name: "未命名规则",
+          desc: "未命名规则",
+          condition: {
+            join: "and",
+            expressions: ["true"],
+          },
+          consequence: {
+            assignments: [
+              {
+                target: "",
+                value: "",
+              },
+            ],
+            operations: [
+              {
+                target: "",
+                operation: "",
+                args: "",
+              },
+            ],
+          },
+        },
+      ],
     } as RuleSet & RuleSetAttr,
   }),
   actions: {},

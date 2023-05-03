@@ -93,7 +93,7 @@
                           dense
                           standout="bg-secondary"
                           input-class="text-foreground"
-                          class="r-input"
+                          class="full-width"
                         />
                       </td>
                     </tr>
@@ -105,7 +105,7 @@
                           dense
                           standout="bg-secondary"
                           input-class="text-foreground"
-                          class="r-input"
+                          class="full-width"
                         />
                       </td>
                     </tr>
@@ -118,7 +118,7 @@
                           disable
                           standout="bg-secondary"
                           input-class="text-foreground"
-                          class="r-input"
+                          class="full-width"
                         />
                       </td>
                     </tr>
@@ -131,7 +131,7 @@
                           disable
                           standout="bg-secondary"
                           input-class="text-foreground"
-                          class="r-input"
+                          class="full-width"
                         />
                       </td>
                     </tr>
@@ -146,7 +146,7 @@
                           type="textarea"
                           standout="bg-secondary"
                           input-class="text-foreground"
-                          class="r-input"
+                          class="full-width"
                         />
                       </td>
                     </tr>
@@ -186,7 +186,9 @@
             <q-card-section class="text-center text-subtitle1">
               规则管理
             </q-card-section>
-            <q-card-section> </q-card-section>
+            <q-card-section>
+              <r-rules v-if="node" v-model="node.rules" />
+            </q-card-section>
           </q-card>
         </template>
       </q-splitter>
@@ -202,6 +204,7 @@ import { useRuleSetStore } from "../stores";
 
 import rParams from "./comps/r-params.vue";
 import rSubsets from "./comps/r-subsets.vue";
+import rRules from "./comps/r-rules.vue";
 
 const core = useCore();
 const plugin = useRuleSet();
@@ -219,19 +222,15 @@ const node = computed(() => tree.value?.getNodeByKey(selected.value));
 <style scoped lang="scss">
 .r-card {
   width: 75%;
-  .r-table {
-    :deep(table) {
-      table-layout: fixed;
-      th,
-      td {
-        font-size: 0.875rem !important;
-        padding: 0.5rem 1.5rem !important;
-        border-color: var(--ui-secondary) !important;
-        .r-input {
-          float: right;
-          width: 75%;
-        }
-      }
+}
+.r-table {
+  :deep(table) {
+    table-layout: fixed;
+    th,
+    td {
+      font-size: 0.875rem !important;
+      padding: 0.5rem 1.5rem !important;
+      border-color: var(--ui-secondary) !important;
     }
   }
 }

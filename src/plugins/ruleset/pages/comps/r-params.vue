@@ -2,6 +2,7 @@
   <q-table
     :rows="rows"
     :columns="columns"
+    :pagination="{ rowsPerPage: 0 }"
     flat
     hide-pagination
     separator="cell"
@@ -16,6 +17,7 @@
     <template #body-cell-acts="scope">
       <q-td :props="scope">
         <q-btn
+          :disable="scope.rowIndex === 0"
           flat
           round
           size="sm"
@@ -26,6 +28,7 @@
           <q-tooltip anchor="top middle" self="bottom middle"> 上移 </q-tooltip>
         </q-btn>
         <q-btn
+          :disable="scope.rowIndex === rows.length - 1"
           flat
           round
           size="sm"
@@ -58,10 +61,10 @@
       </q-td>
     </template>
     <template #no-data="scope">
-      <q-td class="flex flex-center full-width text-subtitle2">
+      <div class="flex flex-center full-width text-subtitle2">
         <q-icon :name="scope.icon" size="xs" class="q-mr-md" />
         列表为空
-      </q-td>
+      </div>
     </template>
   </q-table>
   <div class="full-width flex justify-end q-mt-md">
@@ -80,6 +83,7 @@
 
 <script setup lang="ts">
 import { QTableColumn } from "quasar";
+import { deepCopy } from "~/utils";
 import { MetaParam } from "../..";
 
 const props = defineProps<{
@@ -130,7 +134,7 @@ function down(index: number) {
   }
 }
 function copy(index: number) {
-  rows.value.splice(index + 1, 0, { ...rows.value[index] });
+  rows.value.splice(index + 1, 0, deepCopy(rows.value[index]));
   update();
 }
 function drop(index: number) {
@@ -147,6 +151,7 @@ function drop(index: number) {
     td {
       font-size: 0.875rem !important;
       padding: 0 1rem !important;
+      border-color: var(--ui-secondary) !important;
       input {
         text-align: center;
       }
