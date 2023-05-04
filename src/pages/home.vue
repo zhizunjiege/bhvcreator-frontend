@@ -114,7 +114,7 @@ const core = useCore();
 <style scoped lang="scss"></style>
 
 <style lang="scss">
-.ui-clickable:not([disabled="true"]) {
+.ui-clickable:not([disabled]) {
   cursor: pointer;
   &:hover {
     color: var(--ui-accent);

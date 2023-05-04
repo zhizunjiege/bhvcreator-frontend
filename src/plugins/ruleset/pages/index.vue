@@ -3,7 +3,7 @@
     v-model="percent"
     :limits="[15, 95]"
     unit="%"
-    separator-class="q-mx-xs transparent"
+    separator-class="q-mx-sm transparent"
     class="fit q-pa-md"
   >
     <template #before>
@@ -83,70 +83,19 @@
                 基本信息
               </q-card-section>
               <q-card-section>
-                <q-markup-table flat separator="horizontal" class="r-table">
-                  <tbody>
-                    <tr>
-                      <td>名称</td>
-                      <td>
-                        <q-input
-                          v-model="store.ruleset.name"
-                          dense
-                          filled
-                          class="full-width"
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>版本</td>
-                      <td>
-                        <q-input
-                          v-model="store.ruleset.version"
-                          dense
-                          filled
-                          class="full-width"
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>创建时间</td>
-                      <td>
-                        <q-input
-                          v-model="store.ruleset.createTime"
-                          dense
-                          filled
-                          disable
-                          class="full-width"
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>修改时间</td>
-                      <td>
-                        <q-input
-                          v-model="store.ruleset.updateTime"
-                          dense
-                          filled
-                          disable
-                          class="full-width"
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>详细描述</td>
-                      <td>
-                        <q-input
-                          v-model="store.ruleset.desc"
-                          dense
-                          filled
-                          autogrow
-                          clearable
-                          type="textarea"
-                          class="full-width"
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
-                </q-markup-table>
+                <r-infos v-model="store.ruleset" />
+              </q-card-section>
+              <q-card-section class="text-center text-subtitle1">
+                类型定义
+              </q-card-section>
+              <q-card-section>
+                <r-types v-model="store.ruleset.typeDefines" />
+              </q-card-section>
+              <q-card-section class="text-center text-subtitle1">
+                函数定义
+              </q-card-section>
+              <q-card-section>
+                <r-funcs v-model="store.ruleset.funcDefines" />
               </q-card-section>
               <q-card-section class="text-center text-subtitle1">
                 参数定义
@@ -195,6 +144,9 @@
 import { QTree } from "quasar";
 import { useRuleSetStore } from "../stores";
 
+import rInfos from "./comps/r-infos.vue";
+import rTypes from "./comps/r-types.vue";
+import rFuncs from "./comps/r-funcs.vue";
 import rParams from "./comps/r-params.vue";
 import rSubsets from "./comps/r-subsets.vue";
 import rRules from "./comps/r-rules.vue";
@@ -238,16 +190,5 @@ async function save() {
 <style scoped lang="scss">
 .r-card {
   width: 75%;
-}
-.r-table {
-  :deep(table) {
-    table-layout: fixed;
-    th,
-    td {
-      font-size: 0.875rem !important;
-      padding: 0.5rem 1.5rem !important;
-      border-color: var(--ui-secondary) !important;
-    }
-  }
 }
 </style>

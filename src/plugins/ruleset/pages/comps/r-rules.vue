@@ -41,24 +41,26 @@
       </div>
     </template>
   </q-table>
-  <r-actions-push
-    v-model="rows.rules"
-    :template="{
-      id: '',
-      name: '未命名规则',
-      desc: '未命名规则',
-      condition: {
-        join: 'and',
-        expressions: ['true'],
-      },
-      consequence: {
-        assignments: [],
-        operations: [],
-      },
-    }"
-    @update:model-value="update"
-    @action:push="push"
-  />
+  <div class="full-width flex justify-end q-mt-md">
+    <r-actions-push
+      v-model="rows.rules"
+      :template="{
+        id: '',
+        name: '未命名规则',
+        desc: '未命名规则',
+        condition: {
+          join: 'and',
+          expressions: ['true'],
+        },
+        consequence: {
+          assignments: [],
+          operations: [],
+        },
+      }"
+      @update:model-value="update"
+      @action:push="push"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">

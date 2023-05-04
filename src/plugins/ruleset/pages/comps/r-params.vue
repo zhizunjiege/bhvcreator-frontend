@@ -30,16 +30,18 @@
       </div>
     </template>
   </q-table>
-  <r-actions-push
-    v-model="rows.params"
-    :template="{
-      name: 'param',
-      type: 'float64',
-      value: '0',
-      desc: '参数',
-    }"
-    @update:model-value="update"
-  />
+  <div class="full-width flex justify-end q-mt-md">
+    <r-actions-push
+      v-model="rows.params"
+      :template="{
+        name: 'param',
+        type: 'float64',
+        value: '0',
+        desc: '参数',
+      }"
+      @update:model-value="update"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">

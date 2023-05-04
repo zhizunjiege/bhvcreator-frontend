@@ -1,6 +1,9 @@
 <template>
   <div class="full-width ellipsis" @click="dialogShow = true">
     {{ displayText }}
+    <q-tooltip anchor="top middle" self="bottom middle">
+      {{ displayText }}
+    </q-tooltip>
   </div>
   <q-dialog v-model="dialogShow">
     <q-card flat class="q-mx-auto bg-secondary r-card">
@@ -55,14 +58,16 @@
             </div>
           </template>
         </q-table>
-        <r-actions-push
-          v-model="consequence.assignments"
-          :template="{
-            target: '',
-            value: '',
-          }"
-          @update:model-value="update"
-        />
+        <div class="full-width flex justify-end q-mt-md">
+          <r-actions-push
+            v-model="consequence.assignments"
+            :template="{
+              target: '',
+              value: '',
+            }"
+            @update:model-value="update"
+          />
+        </div>
       </q-card-section>
       <q-card-section>
         <p class="text-subtitle2">数组操作</p>
@@ -112,15 +117,17 @@
             </div>
           </template>
         </q-table>
-        <r-actions-push
-          v-model="consequence.operations"
-          :template="{
-            target: '',
-            operation: '',
-            args: '',
-          }"
-          @update:model-value="update"
-        />
+        <div class="full-width flex justify-end q-mt-md">
+          <r-actions-push
+            v-model="consequence.operations"
+            :template="{
+              target: '',
+              operation: '',
+              args: '',
+            }"
+            @update:model-value="update"
+          />
+        </div>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -152,27 +159,20 @@ const assignmentColumns = [
 const operationColumns = [
   { name: "index", label: "序号", field: "", align: "center" },
   { name: "target", label: "目标", field: "target", align: "center" },
-  { name: "schema", label: "模式", field: "operation", align: "center" },
+  { name: "method", label: "方法", field: "operation", align: "center" },
   { name: "args", label: "参数", field: "args", align: "center" },
   { name: "actions", label: "操作", field: "", align: "center" },
 ] as QTableColumn[];
 
 const dialogShow = ref(false);
 const displayText = computed(() => {
-  if (
-    consequence.value.assignments.length + consequence.value.operations.length >
-    0
-  ) {
-    const a = consequence.value.assignments.map(
-      (e) => `${e.target} = ${e.value}`
-    );
-    const o = consequence.value.operations.map(
-      (e) => `${e.target}.${e.operation}(${e.args})`
-    );
-    return a.concat(o).join("; ");
-  } else {
-    return "无";
-  }
+  const a = consequence.value.assignments.map(
+    (e) => `${e.target} = ${e.value}`
+  );
+  const o = consequence.value.operations.map(
+    (e) => `${e.target}.${e.operation}(${e.args})`
+  );
+  return a.concat(o).join("; ") || "无";
 });
 
 function update() {

@@ -1,6 +1,9 @@
 <template>
   <div class="full-width ellipsis" @click="dialogShow = true">
     {{ displayText }}
+    <q-tooltip anchor="top middle" self="bottom middle">
+      {{ displayText }}
+    </q-tooltip>
   </div>
   <q-dialog v-model="dialogShow">
     <q-card flat class="q-mx-auto bg-secondary r-card">
@@ -77,11 +80,13 @@
             </div>
           </template>
         </q-table>
-        <r-actions-push
-          v-model="condition.expressions"
-          :template="'true'"
-          @update:model-value="update"
-        />
+        <div class="full-width flex justify-end q-mt-md">
+          <r-actions-push
+            v-model="condition.expressions"
+            :template="'true'"
+            @update:model-value="update"
+          />
+        </div>
       </q-card-section>
     </q-card>
   </q-dialog>

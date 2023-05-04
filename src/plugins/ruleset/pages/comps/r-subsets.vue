@@ -41,22 +41,24 @@
       </div>
     </template>
   </q-table>
-  <r-actions-push
-    v-model="rows.subsets"
-    :template="{
-      id: '',
-      name: '未命名子集',
-      desc: '未命名子集',
-      condition: {
-        join: 'and',
-        expressions: ['true'],
-      },
-      subSets: [],
-      rules: [],
-    }"
-    @update:model-value="update"
-    @action:push="push"
-  />
+  <div class="full-width flex justify-end q-mt-md">
+    <r-actions-push
+      v-model="rows.subsets"
+      :template="{
+        id: '',
+        name: '未命名子集',
+        desc: '未命名子集',
+        condition: {
+          join: 'and',
+          expressions: ['true'],
+        },
+        subSets: [],
+        rules: [],
+      }"
+      @update:model-value="update"
+      @action:push="push"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">

@@ -15,85 +15,284 @@ export const useRuleSetStore = defineStore("ruleset", {
   state: () => ({
     ruleset: {
       id: 0,
-      name: "未命名规则集",
+      name: "规则集",
       version: "1.0.0",
-      desc: "未命名规则集",
+      desc: "规则集",
       createTime: getTimestampString(),
       updateTime: getTimestampString(),
 
-      typeDefines: [],
-      funcDefines: [],
+      typeDefines: [
+        {
+          type: "Location",
+          variables: [
+            {
+              name: "longitude",
+              type: "float64",
+            },
+            {
+              name: "latitude",
+              type: "float64",
+            },
+            {
+              name: "altitude",
+              type: "float64",
+            },
+          ],
+        },
+        {
+          type: "Vector3",
+          variables: [
+            {
+              name: "x",
+              type: "float64",
+            },
+            {
+              name: "y",
+              type: "float64",
+            },
+            {
+              name: "z",
+              type: "float64",
+            },
+          ],
+        },
+      ],
+      funcDefines: [
+        {
+          type: "normal",
+          symbol: "add",
+          params: [
+            {
+              name: "a",
+              type: "float64",
+            },
+            {
+              name: "b",
+              type: "float64",
+            },
+          ],
+          return: {
+            type: "float64",
+            value: "a+b",
+          },
+        },
+        {
+          type: "operator",
+          symbol: "*",
+          params: [
+            {
+              name: "a",
+              type: "Vector3",
+            },
+            {
+              name: "b",
+              type: "Vector3",
+            },
+          ],
+          return: {
+            type: "float64",
+            value: "a.x*b.x+a.y*b.y+a.z*b.z",
+          },
+        },
+      ],
       metaInfo: {
         inputs: [
           {
             name: "input1",
-            type: "float64",
+            type: "float64[]",
             desc: "输入1",
+            value: "[]",
+          },
+          {
+            name: "input2",
+            type: "float64",
+            desc: "输入2",
             value: "0",
           },
         ],
-        outputs: [],
-        caches: [],
-        consts: [],
-        temps: [],
+        outputs: [
+          {
+            name: "output1",
+            type: "float64",
+            desc: "输出1",
+            value: "0",
+          },
+        ],
+        caches: [
+          {
+            name: "cache1",
+            type: "float64[]",
+            desc: "缓存1",
+            value: "[]",
+          },
+        ],
+        consts: [
+          {
+            name: "const1",
+            type: "float64",
+            desc: "常量1",
+            value: "3.1415926535",
+          },
+        ],
+        temps: [
+          {
+            name: "temp1",
+            type: "float64",
+            desc: "中间变量1",
+            value: "input1[0]+input2",
+          },
+        ],
       },
       subSets: [
         {
-          id: "sjhkj699",
-          name: "未命名子集",
-          desc: "未命名子集",
+          id: "sj6hkj99",
+          name: "子集1",
+          desc: "子集1",
           condition: {
             join: "and",
             expressions: ["true"],
           },
-          subSets: [
+          subSets: [],
+          rules: [
             {
               id: "hj6789hk",
-              name: "未命名子集",
-              desc: "未命名子集",
+              name: "规则1",
+              desc: "规则1",
               condition: {
                 join: "and",
-                expressions: ["true"],
+                expressions: ["cache1.length()==0"],
               },
-              subSets: [],
-              rules: [],
+              consequence: {
+                assignments: [
+                  {
+                    target: "cache1",
+                    value: "input1",
+                  },
+                ],
+                operations: [],
+              },
             },
             {
-              id: "gja87dd3",
-              name: "未命名子集",
-              desc: "未命名子集",
+              id: "jhks9672",
+              name: "规则2",
+              desc: "规则2",
               condition: {
                 join: "and",
-                expressions: ["true"],
+                expressions: ["cache1.length()!=0"],
               },
-              subSets: [],
-              rules: [],
+              consequence: {
+                assignments: [
+                  {
+                    target: "output1",
+                    value: "cache1[cache1.length()-1]",
+                  },
+                ],
+                operations: [
+                  {
+                    target: "cache1",
+                    operation: "push",
+                    args: "temp1",
+                  },
+                ],
+              },
             },
           ],
-          rules: [],
+        },
+
+        {
+          id: "gja87dd3",
+          name: "子集2",
+          desc: "子集2",
+          condition: {
+            join: "and",
+            expressions: ["true"],
+          },
+          subSets: [],
+          rules: [
+            {
+              id: "hj6789hk",
+              name: "规则1",
+              desc: "规则1",
+              condition: {
+                join: "and",
+                expressions: ["cache1.length()==0"],
+              },
+              consequence: {
+                assignments: [
+                  {
+                    target: "cache1",
+                    value: "input1",
+                  },
+                ],
+                operations: [],
+              },
+            },
+            {
+              id: "jhks9672",
+              name: "规则2",
+              desc: "规则2",
+              condition: {
+                join: "and",
+                expressions: ["cache1.length()!=0"],
+              },
+              consequence: {
+                assignments: [
+                  {
+                    target: "output1",
+                    value: "cache1[cache1.length()-1]",
+                  },
+                ],
+                operations: [
+                  {
+                    target: "cache1",
+                    operation: "push",
+                    args: "temp1",
+                  },
+                ],
+              },
+            },
+          ],
         },
       ],
       rules: [
         {
           id: "hj6789hk",
-          name: "未命名规则",
-          desc: "未命名规则",
+          name: "规则1",
+          desc: "规则1",
           condition: {
             join: "and",
-            expressions: ["true"],
+            expressions: ["cache1.length()==0"],
           },
           consequence: {
             assignments: [
               {
-                target: "",
-                value: "",
+                target: "cache1",
+                value: "input1",
+              },
+            ],
+            operations: [],
+          },
+        },
+        {
+          id: "jhks9672",
+          name: "规则2",
+          desc: "规则2",
+          condition: {
+            join: "and",
+            expressions: ["cache1.length()!=0"],
+          },
+          consequence: {
+            assignments: [
+              {
+                target: "output1",
+                value: "cache1[cache1.length()-1]",
               },
             ],
             operations: [
               {
-                target: "",
-                operation: "",
-                args: "",
+                target: "cache1",
+                operation: "push",
+                args: "temp1",
               },
             ],
           },

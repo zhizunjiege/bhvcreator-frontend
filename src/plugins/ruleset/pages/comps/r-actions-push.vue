@@ -1,16 +1,14 @@
 <template>
-  <div class="full-width flex justify-end q-mt-md">
-    <q-btn
-      flat
-      round
-      size="sm"
-      icon="bi-plus-circle"
-      class="ui-clickable"
-      @click="push"
-    >
-      <q-tooltip anchor="top middle" self="bottom middle"> 添加 </q-tooltip>
-    </q-btn>
-  </div>
+  <q-btn
+    flat
+    round
+    size="sm"
+    icon="bi-plus-circle"
+    class="q-mx-xs ui-clickable"
+    @click="push"
+  >
+    <q-tooltip anchor="top middle" self="bottom middle"> 添加 </q-tooltip>
+  </q-btn>
 </template>
 
 <script setup lang="ts">
