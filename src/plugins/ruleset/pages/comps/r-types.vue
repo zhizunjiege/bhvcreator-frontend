@@ -1,7 +1,7 @@
 <template>
   <q-splitter
     v-model="percent"
-    :limits="[25, 75]"
+    :limits="[20, 40]"
     unit="%"
     separator-class="q-mx-sm transparent"
     class="r-splitter"
@@ -17,20 +17,13 @@
       >
         <template #before>
           <div class="full-width flex justify-center">
-            <r-actions-push
-              v-model="rows.types"
-              :template="{
-                type: 'Type',
-                variables: [],
-              }"
-              @update:model-value="update"
-            />
-            <r-actions-cell
-              v-if="rows.types.length > 0"
+            <r-actions
               v-model="rows.types"
               :row-index="selected"
+              :template="typeTemplate"
+              :actions="rows.types.length > 0 ? 'add/copy/del' : 'add'"
               @update:model-value="update"
-              @action:drop="selected = 0"
+              @action:del="selected = 0"
             />
           </div>
         </template>
@@ -96,30 +89,25 @@
           </template>
           <template #body-cell-acts="scope">
             <q-td :props="scope">
-              <r-actions-cell
+              <r-actions
                 v-model="rows.types[selected].variables"
                 :row-index="scope.rowIndex"
+                :template="variableTemplate"
                 @update:model-value="update"
               />
             </q-td>
           </template>
-          <template #no-data="scope">
-            <div class="flex flex-center full-width text-subtitle2">
-              <q-icon :name="scope.icon" size="xs" class="q-mr-md" />
-              列表为空
+          <template #no-data>
+            <div class="full-width flex justify-center">
+              <r-actions
+                v-model="rows.types[selected].variables"
+                :template="variableTemplate"
+                actions="add"
+                @update:model-value="update"
+              />
             </div>
           </template>
         </q-table>
-        <div class="full-width flex justify-center q-my-md">
-          <r-actions-push
-            v-model="rows.types[selected].variables"
-            :template="{
-              name: '',
-              type: '',
-            }"
-            @update:model-value="update"
-          />
-        </div>
       </template>
       <div
         v-else
@@ -135,8 +123,7 @@
 import { QTableColumn } from "quasar";
 import { TypeDefine } from "../..";
 
-import rActionsCell from "./r-actions-cell.vue";
-import rActionsPush from "./r-actions-push.vue";
+import rActions from "./r-actions.vue";
 
 const props = defineProps<{
   modelValue: TypeDefine[];
@@ -145,7 +132,7 @@ const emits = defineEmits<{
   (e: "update:modelValue", modelValue: TypeDefine[]): void;
 }>();
 
-const percent = ref(25);
+const percent = ref(20);
 
 const selected = ref(0);
 
@@ -153,11 +140,21 @@ const rows = computed(() => ({
   types: props.modelValue,
 }));
 
+const typeTemplate = () => ({
+  type: "Type",
+  variables: [],
+});
+
 const variableColumns = [
   { name: "name", label: "属性", field: "name", align: "center" },
   { name: "type", label: "类型", field: "type", align: "center" },
   { name: "acts", label: "操作", field: "", align: "center" },
 ] as QTableColumn[];
+
+const variableTemplate = () => ({
+  name: "",
+  type: "",
+});
 
 function update() {
   emits("update:modelValue", rows.value.types);

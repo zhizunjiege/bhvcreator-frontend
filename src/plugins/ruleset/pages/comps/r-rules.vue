@@ -26,41 +26,27 @@
     </template>
     <template #body-cell-acts="scope">
       <q-td :props="scope">
-        <r-actions-cell
+        <r-actions
           v-model="rows.rules"
           :row-index="scope.rowIndex"
+          :template="ruleTemplate"
+          no-margin
           @update:model-value="update"
           @action:copy="copy"
         />
       </q-td>
     </template>
-    <template #no-data="scope">
-      <div class="flex flex-center full-width text-subtitle2">
-        <q-icon :name="scope.icon" size="xs" class="q-mr-md" />
-        列表为空
+    <template #no-data>
+      <div class="full-width flex justify-center">
+        <r-actions
+          v-model="rows.rules"
+          :template="ruleTemplate"
+          actions="add"
+          @update:model-value="update"
+        />
       </div>
     </template>
   </q-table>
-  <div class="full-width flex justify-end q-mt-md">
-    <r-actions-push
-      v-model="rows.rules"
-      :template="{
-        id: '',
-        name: '未命名规则',
-        desc: '未命名规则',
-        condition: {
-          join: 'and',
-          expressions: ['true'],
-        },
-        consequence: {
-          assignments: [],
-          operations: [],
-        },
-      }"
-      @update:model-value="update"
-      @action:push="push"
-    />
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -68,8 +54,7 @@ import { QTableColumn } from "quasar";
 import { randomString } from "~/utils";
 import { Rule } from "../..";
 
-import rActionsCell from "./r-actions-cell.vue";
-import rActionsPush from "./r-actions-push.vue";
+import rActions from "./r-actions.vue";
 import rCondition from "./r-condition.vue";
 import rConsequence from "./r-consequence.vue";
 
@@ -80,6 +65,10 @@ const emits = defineEmits<{
   (e: "update:modelValue", modelValue: Rule[]): void;
 }>();
 
+const rows = computed(() => ({
+  rules: props.modelValue,
+}));
+
 const columns = [
   { name: "name", label: "规则名称", field: "name", align: "center" },
   { name: "cond", label: "规则前件", field: "condition", align: "center" },
@@ -88,9 +77,19 @@ const columns = [
   { name: "acts", label: "规则操作", field: "", align: "center" },
 ] as QTableColumn[];
 
-const rows = computed(() => ({
-  rules: props.modelValue,
-}));
+const ruleTemplate = () => ({
+  id: randomString(8),
+  name: "未命名规则",
+  desc: "未命名规则",
+  condition: {
+    join: "and",
+    expressions: ["true"],
+  },
+  consequence: {
+    assignments: [],
+    operations: [],
+  },
+});
 
 function update() {
   emits("update:modelValue", rows.value.rules);
@@ -98,9 +97,6 @@ function update() {
 
 function copy(index: number) {
   rows.value.rules[index + 1].id = randomString(8);
-}
-function push(index: number) {
-  rows.value.rules[index].id = randomString(8);
 }
 </script>
 

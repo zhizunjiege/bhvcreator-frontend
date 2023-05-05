@@ -44,30 +44,26 @@
           </template>
           <template #body-cell-actions="scope">
             <q-td :props="scope">
-              <r-actions-cell
+              <r-actions
                 v-model="consequence.assignments"
                 :row-index="scope.rowIndex"
+                :template="assignmentTemplate"
+                no-margin
                 @update:model-value="update"
               />
             </q-td>
           </template>
-          <template #no-data="scope">
-            <div class="flex flex-center full-width text-subtitle2">
-              <q-icon :name="scope.icon" size="xs" class="q-mr-md" />
-              列表为空
+          <template #no-data>
+            <div class="full-width flex justify-center">
+              <r-actions
+                v-model="consequence.assignments"
+                :template="assignmentTemplate"
+                actions="add"
+                @update:model-value="update"
+              />
             </div>
           </template>
         </q-table>
-        <div class="full-width flex justify-end q-mt-md">
-          <r-actions-push
-            v-model="consequence.assignments"
-            :template="{
-              target: '',
-              value: '',
-            }"
-            @update:model-value="update"
-          />
-        </div>
       </q-card-section>
       <q-card-section>
         <p class="text-subtitle2">数组操作</p>
@@ -103,31 +99,26 @@
           </template>
           <template #body-cell-actions="scope">
             <q-td :props="scope">
-              <r-actions-cell
+              <r-actions
                 v-model="consequence.operations"
                 :row-index="scope.rowIndex"
+                :template="operationTemplate"
+                no-margin
                 @update:model-value="update"
               />
             </q-td>
           </template>
-          <template #no-data="scope">
-            <div class="flex flex-center full-width text-subtitle2">
-              <q-icon :name="scope.icon" size="xs" class="q-mr-md" />
-              列表为空
+          <template #no-data>
+            <div class="full-width flex justify-center">
+              <r-actions
+                v-model="consequence.operations"
+                :template="operationTemplate"
+                actions="add"
+                @update:model-value="update"
+              />
             </div>
           </template>
         </q-table>
-        <div class="full-width flex justify-end q-mt-md">
-          <r-actions-push
-            v-model="consequence.operations"
-            :template="{
-              target: '',
-              operation: '',
-              args: '',
-            }"
-            @update:model-value="update"
-          />
-        </div>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -137,8 +128,7 @@
 import { QTableColumn } from "quasar";
 import { Consequence } from "../..";
 
-import rActionsCell from "./r-actions-cell.vue";
-import rActionsPush from "./r-actions-push.vue";
+import rActions from "./r-actions.vue";
 
 const props = defineProps<{
   modelValue: Consequence;
@@ -163,6 +153,16 @@ const operationColumns = [
   { name: "args", label: "参数", field: "args", align: "center" },
   { name: "actions", label: "操作", field: "", align: "center" },
 ] as QTableColumn[];
+
+const assignmentTemplate = () => ({
+  target: "",
+  value: "",
+});
+const operationTemplate = () => ({
+  target: "",
+  operation: "",
+  args: "",
+});
 
 const dialogShow = ref(false);
 const displayText = computed(() => {

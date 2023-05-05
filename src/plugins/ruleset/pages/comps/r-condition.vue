@@ -46,7 +46,7 @@
           table-header-class="bg-primary"
         >
           <template #header-cell-value="scope">
-            <q-th :props="scope" colspan="4">
+            <q-th :props="scope" colspan="3">
               {{ scope.col.label }}
             </q-th>
           </template>
@@ -56,7 +56,7 @@
             </q-td>
           </template>
           <template #body-cell-value="scope">
-            <q-td :props="scope" colspan="4">
+            <q-td :props="scope" colspan="3">
               <q-input
                 v-model="condition.expressions[scope.rowIndex]"
                 dense
@@ -66,27 +66,25 @@
           </template>
           <template #body-cell-actions="scope">
             <q-td :props="scope">
-              <r-actions-cell
+              <r-actions
                 v-model="condition.expressions"
                 :row-index="scope.rowIndex"
+                :template="expressionTemplate"
                 @update:model-value="update"
               />
             </q-td>
           </template>
-          <template #no-data="scope">
-            <div class="flex flex-center full-width text-subtitle2">
-              <q-icon :name="scope.icon" size="xs" class="q-mr-md" />
-              列表为空
+          <template #no-data>
+            <div class="full-width flex justify-center">
+              <r-actions
+                v-model="condition.expressions"
+                :template="expressionTemplate"
+                actions="add"
+                @update:model-value="update"
+              />
             </div>
           </template>
         </q-table>
-        <div class="full-width flex justify-end q-mt-md">
-          <r-actions-push
-            v-model="condition.expressions"
-            :template="'true'"
-            @update:model-value="update"
-          />
-        </div>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -96,8 +94,7 @@
 import { QTableColumn } from "quasar";
 import { Condition } from "../..";
 
-import rActionsCell from "./r-actions-cell.vue";
-import rActionsPush from "./r-actions-push.vue";
+import rActions from "./r-actions.vue";
 
 const props = defineProps<{
   modelValue: Condition;
@@ -114,6 +111,8 @@ const expressionColumns = [
   { name: "value", label: "取值", field: (r) => r, align: "center" },
   { name: "actions", label: "操作", field: "", align: "center" },
 ] as QTableColumn[];
+
+const expressionTemplate = () => "true";
 
 const dialogShow = ref(false);
 const joinSymbols = { and: "&&", or: "||" };

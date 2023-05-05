@@ -16,40 +16,33 @@
     </template>
     <template #body-cell-acts="scope">
       <q-td :props="scope">
-        <r-actions-cell
+        <r-actions
           v-model="rows.params"
           :row-index="scope.rowIndex"
+          :template="template"
+          no-margin
           @update:model-value="update"
         />
       </q-td>
     </template>
-    <template #no-data="scope">
-      <div class="flex flex-center full-width text-subtitle2">
-        <q-icon :name="scope.icon" size="xs" class="q-mr-md" />
-        列表为空
+    <template #no-data>
+      <div class="full-width flex justify-center">
+        <r-actions
+          v-model="rows.params"
+          :template="template"
+          actions="add"
+          @update:model-value="update"
+        />
       </div>
     </template>
   </q-table>
-  <div class="full-width flex justify-end q-mt-md">
-    <r-actions-push
-      v-model="rows.params"
-      :template="{
-        name: 'param',
-        type: 'float64',
-        value: '0',
-        desc: '参数',
-      }"
-      @update:model-value="update"
-    />
-  </div>
 </template>
 
 <script setup lang="ts">
 import { QTableColumn } from "quasar";
 import { MetaParam } from "../..";
 
-import rActionsCell from "./r-actions-cell.vue";
-import rActionsPush from "./r-actions-push.vue";
+import rActions from "./r-actions.vue";
 
 const props = defineProps<{
   modelValue: MetaParam[];
@@ -65,6 +58,13 @@ const columns = [
   { name: "desc", label: "描述", field: "desc", align: "center" },
   { name: "acts", label: "操作", field: "", align: "center" },
 ] as QTableColumn[];
+
+const template = () => ({
+  name: "param",
+  type: "float64",
+  value: "0",
+  desc: "参数",
+});
 
 const rows = computed(() => ({
   params: props.modelValue,

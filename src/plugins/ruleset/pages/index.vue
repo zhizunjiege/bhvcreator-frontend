@@ -1,7 +1,7 @@
 <template>
   <q-splitter
     v-model="percent"
-    :limits="[15, 95]"
+    :limits="[15, 30]"
     unit="%"
     separator-class="q-mx-sm transparent"
     class="fit q-pa-md"
@@ -189,6 +189,6 @@ async function save() {
 
 <style scoped lang="scss">
 .r-card {
-  width: 75%;
+  width: 80%;
 }
 </style>

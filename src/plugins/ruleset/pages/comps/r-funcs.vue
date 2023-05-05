@@ -1,7 +1,7 @@
 <template>
   <q-splitter
     v-model="percent"
-    :limits="[25, 75]"
+    :limits="[20, 40]"
     unit="%"
     separator-class="q-mx-sm transparent"
     class="r-splitter"
@@ -17,25 +17,13 @@
       >
         <template #before>
           <div class="full-width flex justify-center">
-            <r-actions-push
-              v-model="rows.funcs"
-              :template="{
-                type: 'normal',
-                symbol: 'func',
-                params: [],
-                return: {
-                  type: '',
-                  value: '',
-                },
-              }"
-              @update:model-value="update"
-              @action:drop="selected = 0"
-            />
-            <r-actions-cell
-              v-if="rows.funcs.length > 0"
+            <r-actions
               v-model="rows.funcs"
               :row-index="selected"
+              :template="funcTemplate"
+              :actions="rows.funcs.length > 0 ? 'add/copy/del' : 'add'"
               @update:model-value="update"
+              @action:del="selected = 0"
             />
           </div>
         </template>
@@ -80,8 +68,6 @@
                   @update:model-value="update"
                 />
               </td>
-            </tr>
-            <tr>
               <td>函数符号</td>
               <td>
                 <q-input
@@ -98,7 +84,7 @@
         <q-separator color="transparent" class="q-my-sm" />
         <q-table
           :rows="rows.funcs[selected].params"
-          :columns="variableColumns"
+          :columns="paramColumns"
           :pagination="{ rowsPerPage: 0 }"
           flat
           hide-pagination
@@ -113,38 +99,26 @@
           </template>
           <template #body-cell-acts="scope">
             <q-td :props="scope">
-              <r-actions-push
-                v-model="rows.funcs[selected].params"
-                :template="{
-                  name: '',
-                  type: '',
-                }"
-                @update:model-value="update"
-              />
-              <r-actions-cell
+              <r-actions
                 v-model="rows.funcs[selected].params"
                 :row-index="scope.rowIndex"
+                :template="paramTemplate"
                 @update:model-value="update"
               />
             </q-td>
           </template>
-          <template #no-data="scope">
-            <div class="flex flex-center full-width text-subtitle2">
-              <q-icon :name="scope.icon" size="xs" class="q-mr-md" />
-              列表为空
+          <template #no-data>
+            <div class="full-width flex justify-center">
+              <r-actions
+                v-model="rows.funcs[selected].params"
+                :template="paramTemplate"
+                actions="add"
+                @update:model-value="update"
+              />
             </div>
           </template>
         </q-table>
-        <div class="full-width flex justify-center q-my-md">
-          <r-actions-push
-            v-model="rows.funcs[selected].params"
-            :template="{
-              name: '',
-              type: '',
-            }"
-            @update:model-value="update"
-          />
-        </div>
+        <q-separator color="transparent" class="q-my-sm" />
         <q-markup-table flat separator="horizontal" class="r-table">
           <tbody>
             <tr>
@@ -188,8 +162,7 @@
 import { QTableColumn } from "quasar";
 import { FuncDefine } from "../..";
 
-import rActionsCell from "./r-actions-cell.vue";
-import rActionsPush from "./r-actions-push.vue";
+import rActions from "./r-actions.vue";
 
 const props = defineProps<{
   modelValue: FuncDefine[];
@@ -198,7 +171,7 @@ const emits = defineEmits<{
   (e: "update:modelValue", modelValue: FuncDefine[]): void;
 }>();
 
-const percent = ref(25);
+const percent = ref(20);
 
 const selected = ref(0);
 
@@ -206,11 +179,25 @@ const rows = computed(() => ({
   funcs: props.modelValue,
 }));
 
-const variableColumns = [
+const funcTemplate = () => ({
+  type: "normal",
+  symbol: "Func",
+  params: [],
+  return: {
+    type: "",
+    value: "",
+  },
+});
+const paramColumns = [
   { name: "name", label: "参数", field: "name", align: "center" },
   { name: "type", label: "类型", field: "type", align: "center" },
   { name: "acts", label: "操作", field: "", align: "center" },
 ] as QTableColumn[];
+
+const paramTemplate = () => ({
+  name: "",
+  type: "",
+});
 
 function update() {
   emits("update:modelValue", rows.value.funcs);
