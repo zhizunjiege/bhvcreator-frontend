@@ -63,6 +63,7 @@
           <div class="fit flex justify-between items-center">
             <span>{{ store.ruleset.name }}</span>
             <q-btn
+              :loading="saving"
               flat
               round
               size="sm"
@@ -77,50 +78,54 @@
           </div>
         </template>
         <template #after>
+          <q-card
+            v-show="selected == store.ruleset.id"
+            flat
+            class="q-mx-auto transparent r-card"
+          >
+            <q-card-section class="text-center text-subtitle1">
+              基本信息
+            </q-card-section>
+            <q-card-section>
+              <r-infos v-model="store.ruleset" />
+            </q-card-section>
+            <q-card-section class="text-center text-subtitle1">
+              类型定义
+            </q-card-section>
+            <q-card-section>
+              <r-types v-model="store.ruleset.typeDefines" />
+            </q-card-section>
+            <q-card-section class="text-center text-subtitle1">
+              函数定义
+            </q-card-section>
+            <q-card-section>
+              <r-funcs v-model="store.ruleset.funcDefines" />
+            </q-card-section>
+            <q-card-section class="text-center text-subtitle1">
+              参数定义
+            </q-card-section>
+            <q-card-section>
+              <p class="text-subtitle2">输入参数</p>
+              <r-params v-model="store.ruleset.metaInfo.inputs" />
+            </q-card-section>
+            <q-card-section>
+              <p class="text-subtitle2">输出参数</p>
+              <r-params v-model="store.ruleset.metaInfo.outputs" />
+            </q-card-section>
+            <q-card-section>
+              <p class="text-subtitle2">缓存参数</p>
+              <r-params v-model="store.ruleset.metaInfo.caches" />
+            </q-card-section>
+            <q-card-section>
+              <p class="text-subtitle2">数值常量</p>
+              <r-params v-model="store.ruleset.metaInfo.consts" />
+            </q-card-section>
+            <q-card-section>
+              <p class="text-subtitle2">中间变量</p>
+              <r-params v-model="store.ruleset.metaInfo.temps" />
+            </q-card-section>
+          </q-card>
           <q-card flat class="q-mx-auto transparent r-card">
-            <template v-if="selected == store.ruleset.id">
-              <q-card-section class="text-center text-subtitle1">
-                基本信息
-              </q-card-section>
-              <q-card-section>
-                <r-infos v-model="store.ruleset" />
-              </q-card-section>
-              <q-card-section class="text-center text-subtitle1">
-                类型定义
-              </q-card-section>
-              <q-card-section>
-                <r-types v-model="store.ruleset.typeDefines" />
-              </q-card-section>
-              <q-card-section class="text-center text-subtitle1">
-                函数定义
-              </q-card-section>
-              <q-card-section>
-                <r-funcs v-model="store.ruleset.funcDefines" />
-              </q-card-section>
-              <q-card-section class="text-center text-subtitle1">
-                参数定义
-              </q-card-section>
-              <q-card-section>
-                <p class="text-subtitle2">输入参数</p>
-                <r-params v-model="store.ruleset.metaInfo.inputs" />
-              </q-card-section>
-              <q-card-section>
-                <p class="text-subtitle2">输出参数</p>
-                <r-params v-model="store.ruleset.metaInfo.outputs" />
-              </q-card-section>
-              <q-card-section>
-                <p class="text-subtitle2">缓存参数</p>
-                <r-params v-model="store.ruleset.metaInfo.caches" />
-              </q-card-section>
-              <q-card-section>
-                <p class="text-subtitle2">数值常量</p>
-                <r-params v-model="store.ruleset.metaInfo.consts" />
-              </q-card-section>
-              <q-card-section>
-                <p class="text-subtitle2">中间变量</p>
-                <r-params v-model="store.ruleset.metaInfo.temps" />
-              </q-card-section>
-            </template>
             <q-card-section class="text-center text-subtitle1">
               子集管理
             </q-card-section>
@@ -162,9 +167,12 @@ const selected = ref(store.ruleset.id);
 const tree = ref(null as Nullable<QTree>);
 const node = computed(() => tree.value?.getNodeByKey(selected.value));
 
+const saving = ref(false);
+
 async function save() {
+  saving.value = true;
   const result = store.validate();
-  if (result) {
+  if (result.success) {
     try {
       await store.save();
       $q.notify({
@@ -181,9 +189,10 @@ async function save() {
   } else {
     $q.notify({
       type: "negative",
-      message: "校验失败：" + result,
+      message: "校验失败：" + result.message,
     });
   }
+  saving.value = false;
 }
 </script>
 

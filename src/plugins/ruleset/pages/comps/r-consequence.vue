@@ -92,6 +92,20 @@
               {{ scope.rowIndex + 1 }}
             </q-td>
           </template>
+          <template #body-cell-method="scope">
+            <q-td :props="scope">
+              <q-select
+                v-model="scope.row[scope.col.field]"
+                :options="['push', 'resize']"
+                dense
+                borderless
+                options-dense
+                hide-dropdown-icon
+                popup-content-class="text-center"
+                class="full-width"
+              />
+            </q-td>
+          </template>
           <template #body-cell-args="scope">
             <q-td :props="scope" colspan="2">
               <q-input v-model="scope.row[scope.col.field]" dense borderless />
@@ -194,6 +208,9 @@ function update() {
       border-color: var(--ui-secondary) !important;
       input {
         text-align: center;
+      }
+      .q-select .q-field__native {
+        justify-content: center;
       }
     }
   }

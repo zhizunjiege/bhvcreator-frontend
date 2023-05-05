@@ -5,6 +5,10 @@ export function isEmpty(obj: object) {
   );
 }
 
+export function isUnique<T>(arr: T[]) {
+  return arr.length === new Set(arr).size;
+}
+
 export function deepCopy<T>(src: T): T {
   return JSON.parse(JSON.stringify(src));
 }

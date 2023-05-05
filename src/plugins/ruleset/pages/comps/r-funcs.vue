@@ -60,10 +60,14 @@
             <tr>
               <td>函数类型</td>
               <td>
-                <q-input
+                <q-select
                   v-model="rows.funcs[selected].type"
+                  :options="['normal', 'operator']"
                   dense
                   filled
+                  options-dense
+                  hide-dropdown-icon
+                  popup-content-class="text-center"
                   class="full-width"
                   @update:model-value="update"
                 />
@@ -219,6 +223,9 @@ function update() {
     }
     input {
       text-align: center;
+    }
+    .q-select .q-field__native {
+      justify-content: center;
     }
   }
 }

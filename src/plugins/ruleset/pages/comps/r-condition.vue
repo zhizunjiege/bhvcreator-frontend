@@ -18,15 +18,12 @@
               <td>
                 <q-select
                   v-model="condition.join"
-                  :options="[
-                    { label: '与', value: 'and' },
-                    { label: '或', value: 'or' },
-                  ]"
+                  :options="['and', 'or']"
                   dense
                   filled
-                  emit-value
-                  map-options
                   options-dense
+                  hide-dropdown-icon
+                  popup-content-class="text-center"
                   class="full-width"
                 />
               </td>
@@ -146,6 +143,9 @@ function update() {
       border-color: var(--ui-secondary) !important;
       input {
         text-align: center;
+      }
+      .q-select .q-field__native {
+        justify-content: center;
       }
     }
   }

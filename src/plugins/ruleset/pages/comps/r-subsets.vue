@@ -37,7 +37,7 @@
       </q-td>
     </template>
     <template #no-data>
-      <div class="full-width flex justify-end q-mt-md">
+      <div class="full-width flex justify-center">
         <r-actions
           v-model="rows.subsets"
           :template="subsetTemplate"

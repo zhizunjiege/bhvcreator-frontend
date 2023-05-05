@@ -1,5 +1,5 @@
 import { useCore } from "~/core";
-import { getTimestampString } from "~/utils";
+import { getTimestampString, isUnique } from "~/utils";
 import { RuleSet, useRuleSet } from "..";
 
 export interface RuleSetAttr {
@@ -198,7 +198,6 @@ export const useRuleSetStore = defineStore("ruleset", {
             },
           ],
         },
-
         {
           id: "gja87dd3",
           name: "子集2",
@@ -300,9 +299,40 @@ export const useRuleSetStore = defineStore("ruleset", {
       ],
     } as RuleSet & RuleSetAttr,
   }),
+  // getters: {
+  //   required: () => (v: string) => !!v,
+  //   token: () => (v: string) => /^[a-zA-Z_][a-zA-Z0-9_]*/.test(v),
+  //   type: () => (v: string) =>
+  //     /(?:(?:float|u?int)(?:16|32|64)|bool|string)(\[\])?/.test(v),
+  //   types: (s) => s.ruleset.typeDefines.map((e) => e.type),
+  // },
   actions: {
-    validate() {
-      return true;
+    failure(message: string) {
+      return { success: false, message };
+    },
+    success() {
+      return { success: true };
+    },
+    validate(): { success: boolean; message?: string } {
+      if (!this.ruleset.name || !this.ruleset.version) {
+        return this.failure("名称和版本不能为空");
+      }
+      if (!isUnique(this.ruleset.typeDefines.map((e) => e.type))) {
+        return this.failure("类型定义中存在重复");
+      }
+      if (!isUnique(this.ruleset.funcDefines.map((e) => e.symbol))) {
+        return this.failure("函数定义中存在重复");
+      }
+      if (
+        !isUnique(
+          Object.values(this.ruleset.metaInfo)
+            .map((e) => e.map((e) => e.name))
+            .flat()
+        )
+      ) {
+        return this.failure("参数定义中存在重复");
+      }
+      return this.success();
     },
     async save() {
       const core = useCore();
