@@ -46,7 +46,7 @@
           </q-tabs>
           <div
             v-else
-            class="fit flex flex-center bg-transparent text-ignore text-weight-bold"
+            class="fit flex flex-center bg-transparent text-ignore text-weight-bold text-h4"
           >
             无
           </div>
@@ -111,7 +111,7 @@
       </template>
       <div
         v-else
-        class="fit flex flex-center bg-primary text-ignore text-weight-bold"
+        class="fit flex flex-center bg-primary text-ignore text-weight-bold text-h4"
       >
         无
       </div>

@@ -61,7 +61,19 @@
       >
         <template #before>
           <div class="fit flex justify-between items-center">
-            <span>{{ store.ruleset.name }}</span>
+            <q-btn
+              :loading="saving"
+              flat
+              round
+              size="sm"
+              icon="bi-bug"
+              class="bg-secondary ui-clickable"
+              @click="validate"
+            >
+              <q-tooltip self="center middle" anchor="top right">
+                校验
+              </q-tooltip>
+            </q-btn>
             <q-btn
               :loading="saving"
               flat
@@ -167,12 +179,32 @@ const selected = ref(store.ruleset.id);
 const tree = ref(null as Nullable<QTree>);
 const node = computed(() => tree.value?.getNodeByKey(selected.value));
 
+const validating = ref(false);
+
+function validate() {
+  validating.value = true;
+  const result = store.validate();
+  if (result.success) {
+    $q.notify({
+      type: "positive",
+      message: "校验成功",
+    });
+  } else {
+    $q.notify({
+      type: "negative",
+      message: "校验失败：" + result.message,
+    });
+  }
+  validating.value = false;
+  return result.success;
+}
+
 const saving = ref(false);
 
 async function save() {
   saving.value = true;
-  const result = store.validate();
-  if (result.success) {
+  const success = validate();
+  if (success) {
     try {
       await store.save();
       $q.notify({
@@ -186,11 +218,6 @@ async function save() {
       });
       console.error(e);
     }
-  } else {
-    $q.notify({
-      type: "negative",
-      message: "校验失败：" + result.message,
-    });
   }
   saving.value = false;
 }
@@ -201,3 +228,7 @@ async function save() {
   width: 80%;
 }
 </style>
+
+<route lang="yaml">
+name: ruleset
+</route>

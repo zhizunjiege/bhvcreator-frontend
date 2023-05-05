@@ -53,7 +53,7 @@
         <td>详细描述</td>
         <td>
           <q-input
-            v-model="attr.desc"
+            v-model="attr.description"
             dense
             filled
             autogrow
