@@ -67,6 +67,7 @@
             :filter="filter"
             flat
             hide-pagination
+            hide-selected-banner
             row-key="id"
             separator="none"
             selection="multiple"
@@ -311,7 +312,6 @@ async function dropItems() {
     message: "确认删除选择的资源？",
     cancel: true,
     persistent: true,
-    class: "bg-primary",
   }).onOk(async () => {
     try {
       const ids = selectedItems.value.map((item) => item.id);
