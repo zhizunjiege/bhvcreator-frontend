@@ -7,7 +7,6 @@
     hide-pagination
     separator="cell"
     table-class="r-table"
-    table-header-class="bg-primary"
   >
     <template #header-cell-cond="scope">
       <q-th :props="scope" colspan="2">
@@ -30,7 +29,6 @@
           v-model="rows.subsets"
           :row-index="scope.rowIndex"
           :template="subsetTemplate"
-          no-margin
           @update:model-value="update"
           @action:copy="copy"
         />

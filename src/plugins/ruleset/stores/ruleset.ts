@@ -72,7 +72,7 @@ export const useRuleSetStore = defineStore("ruleset", {
     async save() {
       const core = useCore();
       const plugin = useRuleSet();
-      const xml = plugin.buildRuleSet({
+      const xml = plugin.build({
         typeDefines: this.ruleset.typeDefines,
         funcDefines: this.ruleset.funcDefines,
         metaInfo: this.ruleset.metaInfo,
@@ -92,6 +92,23 @@ export const useRuleSetStore = defineStore("ruleset", {
         this.ruleset.createTime = getTimestampString();
       }
       this.ruleset.updateTime = getTimestampString();
+    },
+    async load(id: number) {
+      const core = useCore();
+      const plugin = useRuleSet();
+      const res = await core.select("ruleset", [], { id });
+      if (res.length) {
+        const ruleset = plugin.parse(res[0].xml);
+        Object.assign(this.ruleset, {
+          id: res[0].id,
+          name: res[0].name,
+          version: res[0].version,
+          description: res[0].description,
+          createTime: res[0].create_time,
+          updateTime: res[0].update_time,
+          ...ruleset,
+        });
+      }
     },
   },
 });

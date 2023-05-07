@@ -2,7 +2,7 @@
   <q-btn
     v-if="!actions || actions.includes('add')"
     :size="size"
-    :class="noMargin ? '' : 'q-mx-xs'"
+    :class="margin ? 'q-mx-xs' : ''"
     flat
     round
     icon="bi-plus-circle"
@@ -15,7 +15,7 @@
     v-if="!actions || actions.includes('up')"
     :disable="rowIndex === 0"
     :size="size"
-    :class="noMargin ? '' : 'q-mx-xs'"
+    :class="margin ? 'q-mx-xs' : ''"
     flat
     round
     icon="bi-arrow-up-circle"
@@ -28,7 +28,7 @@
     v-if="!actions || actions.includes('down')"
     :disable="rowIndex === rows.length - 1"
     :size="size"
-    :class="noMargin ? '' : 'q-mx-xs'"
+    :class="margin ? 'q-mx-xs' : ''"
     flat
     round
     icon="bi-arrow-down-circle"
@@ -40,7 +40,7 @@
   <q-btn
     v-if="!actions || actions.includes('copy')"
     :size="size"
-    :class="noMargin ? '' : 'q-mx-xs'"
+    :class="margin ? 'q-mx-xs' : ''"
     flat
     round
     icon="bi-files"
@@ -52,7 +52,7 @@
   <q-btn
     v-if="!actions || actions.includes('del')"
     :size="size"
-    :class="noMargin ? '' : 'q-mx-xs'"
+    :class="margin ? 'q-mx-xs' : ''"
     flat
     round
     icon="bi-trash"
@@ -74,14 +74,14 @@ const props = withDefaults(
     template?: () => any;
     actions?: string;
     size?: string;
-    noMargin?: boolean;
+    margin?: boolean;
   }>(),
   {
     rowIndex: -1,
     template: () => null,
     actions: "",
     size: "sm",
-    noMargin: false,
+    margin: false,
   }
 );
 const emits = defineEmits<{

@@ -40,7 +40,6 @@
           hide-pagination
           separator="cell"
           table-class="r-table"
-          table-header-class="bg-primary"
         >
           <template #header-cell-value="scope">
             <q-th :props="scope" colspan="3">

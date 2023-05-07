@@ -80,14 +80,14 @@ type XmlMetaParam = XmlParameter & {
 };
 type XmlCondition = {
   "@join": "and" | "or";
-  Expression: string[];
+  Expression?: string[];
 };
 type XmlConsequence = {
-  Assignment: {
+  Assignment?: {
     Target: string;
     Value: string;
   }[];
-  ArrayOperation: {
+  ArrayOperation?: {
     Target: string;
     Operation: string;
     Args: string;
@@ -95,13 +95,13 @@ type XmlConsequence = {
 };
 type XmlTypeDefine = {
   "@type": string;
-  Variable: XmlParameter[];
+  Variable?: XmlParameter[];
 };
 type XmlFuncDefine = {
   "@type": string;
   Symbol: string;
   Params: {
-    Param: XmlParameter[];
+    Param?: XmlParameter[];
   };
   Return: {
     "@type": string;
@@ -121,10 +121,41 @@ type XmlSubSet = {
   "@desc": string;
   Condition: XmlCondition;
   SubSets: {
-    SubSet: XmlSubSet[];
+    SubSet?: XmlSubSet[];
   };
   Rules: {
-    Rule: XmlRule[];
+    Rule?: XmlRule[];
+  };
+};
+type XmlRuleSet = {
+  TypeDefines: {
+    TypeDefine?: XmlTypeDefine[];
+  };
+  FuncDefines: {
+    FuncDefine?: XmlFuncDefine[];
+  };
+  MetaInfo: {
+    Inputs: {
+      Input?: XmlMetaParam[];
+    };
+    Outputs: {
+      Output?: XmlMetaParam[];
+    };
+    Caches: {
+      Cache?: XmlMetaParam[];
+    };
+    Consts: {
+      Const?: XmlMetaParam[];
+    };
+    Temps: {
+      Temp?: XmlMetaParam[];
+    };
+  };
+  SubSets: {
+    SubSet?: XmlSubSet[];
+  };
+  Rules: {
+    Rule?: XmlRule[];
   };
 };
 
@@ -238,44 +269,45 @@ class RuleSetPlugin implements Plugin {
       },
     };
   }
-  public buildRuleSet(ruleset: RuleSet): string {
-    const tmp = {
-      "?xml": { "@version": "1.0", "@encoding": "UTF-8" },
-      RuleSet: {
-        TypeDefines: {
-          TypeDefine: ruleset.typeDefines.map(this.buildTypeDefine.bind(this)),
+  private buildRuleSet(ruleset: RuleSet): XmlRuleSet {
+    return {
+      TypeDefines: {
+        TypeDefine: ruleset.typeDefines.map(this.buildTypeDefine.bind(this)),
+      },
+      FuncDefines: {
+        FuncDefine: ruleset.funcDefines.map(this.buildFuncDefine.bind(this)),
+      },
+      MetaInfo: {
+        Inputs: {
+          Input: ruleset.metaInfo.inputs.map(this.buildMetaParam.bind(this)),
         },
-        FuncDefines: {
-          FuncDefine: ruleset.funcDefines.map(this.buildFuncDefine.bind(this)),
+        Outputs: {
+          Output: ruleset.metaInfo.outputs.map(this.buildMetaParam.bind(this)),
         },
-        MetaInfo: {
-          Inputs: {
-            Input: ruleset.metaInfo.inputs.map(this.buildMetaParam.bind(this)),
-          },
-          Outputs: {
-            Output: ruleset.metaInfo.outputs.map(
-              this.buildMetaParam.bind(this)
-            ),
-          },
-          Caches: {
-            Cache: ruleset.metaInfo.caches.map(this.buildMetaParam.bind(this)),
-          },
-          Consts: {
-            Const: ruleset.metaInfo.consts.map(this.buildMetaParam.bind(this)),
-          },
-          Temps: {
-            Temp: ruleset.metaInfo.temps.map(this.buildMetaParam.bind(this)),
-          },
+        Caches: {
+          Cache: ruleset.metaInfo.caches.map(this.buildMetaParam.bind(this)),
         },
-        SubSets: {
-          SubSet: ruleset.subSets.map(this.buildSubSet.bind(this)),
+        Consts: {
+          Const: ruleset.metaInfo.consts.map(this.buildMetaParam.bind(this)),
         },
-        Rules: {
-          Rule: ruleset.rules.map(this.buildRule.bind(this)),
+        Temps: {
+          Temp: ruleset.metaInfo.temps.map(this.buildMetaParam.bind(this)),
         },
       },
+      SubSets: {
+        SubSet: ruleset.subSets.map(this.buildSubSet.bind(this)),
+      },
+      Rules: {
+        Rule: ruleset.rules.map(this.buildRule.bind(this)),
+      },
     };
-    return this.builder.build(tmp);
+  }
+  public build(ruleset: RuleSet): string {
+    const obj = {
+      "?xml": { "@version": "1.0", "@encoding": "UTF-8" },
+      RuleSet: this.buildRuleSet(ruleset),
+    };
+    return this.builder.build(obj);
   }
 
   private parseParameter(param: XmlParameter): Parameter {
@@ -294,33 +326,36 @@ class RuleSetPlugin implements Plugin {
   private parseCondition(condition: XmlCondition): Condition {
     return {
       join: condition["@join"],
-      expressions: condition.Expression,
+      expressions: condition.Expression ?? [],
     };
   }
   private parseConsequence(consequence: XmlConsequence): Consequence {
     return {
-      assignments: consequence.Assignment.map((item) => ({
-        target: item.Target,
-        value: item.Value,
-      })),
-      operations: consequence.ArrayOperation.map((item) => ({
-        target: item.Target,
-        operation: item.Operation,
-        args: item.Args,
-      })),
+      assignments:
+        consequence.Assignment?.map((item) => ({
+          target: item.Target,
+          value: item.Value,
+        })) ?? [],
+      operations:
+        consequence.ArrayOperation?.map((item) => ({
+          target: item.Target,
+          operation: item.Operation,
+          args: item.Args,
+        })) ?? [],
     };
   }
   private parseTypeDefine(typeDefine: XmlTypeDefine): TypeDefine {
     return {
       type: typeDefine["@type"],
-      variables: typeDefine.Variable.map(this.parseParameter.bind(this)),
+      variables: typeDefine.Variable?.map(this.parseParameter.bind(this)) ?? [],
     };
   }
   private parseFuncDefine(funcDefine: XmlFuncDefine): FuncDefine {
     return {
       type: funcDefine["@type"],
       symbol: funcDefine.Symbol,
-      params: funcDefine.Params.Param.map(this.parseParameter.bind(this)),
+      params:
+        funcDefine.Params.Param?.map(this.parseParameter.bind(this)) ?? [],
       return: {
         type: funcDefine.Return["@type"],
         value: funcDefine.Return.Value,
@@ -342,39 +377,48 @@ class RuleSetPlugin implements Plugin {
       name: subSet["@name"],
       desc: subSet["@desc"],
       condition: this.parseCondition(subSet.Condition),
-      subSets: subSet.SubSets.SubSet.map(this.parseSubSet.bind(this)),
-      rules: subSet.Rules.Rule.map(this.parseRule.bind(this)),
+      subSets: subSet.SubSets.SubSet?.map(this.parseSubSet.bind(this)) ?? [],
+      rules: subSet.Rules.Rule?.map(this.parseRule.bind(this)) ?? [],
     };
   }
-  public parseRuleSet(ruleset: string): RuleSet {
-    const tmp = this.parser.parse(ruleset);
+  private parseRuleSet(ruleset: XmlRuleSet): RuleSet {
     return {
-      typeDefines: tmp.RuleSet.TypeDefines.TypeDefine.map(
-        this.parseTypeDefine.bind(this)
-      ),
-      funcDefines: tmp.RuleSet.FuncDefines.FuncDefine.map(
-        this.parseFuncDefine.bind(this)
-      ),
+      typeDefines:
+        ruleset.TypeDefines.TypeDefine?.map(this.parseTypeDefine.bind(this)) ??
+        [],
+      funcDefines:
+        ruleset.FuncDefines.FuncDefine?.map(this.parseFuncDefine.bind(this)) ??
+        [],
       metaInfo: {
-        inputs: tmp.RuleSet.MetaInfo.Inputs.Input.map(
-          this.parseMetaParam.bind(this)
-        ),
-        outputs: tmp.RuleSet.MetaInfo.Outputs.Output.map(
-          this.parseMetaParam.bind(this)
-        ),
-        caches: tmp.RuleSet.MetaInfo.Caches.Cache.map(
-          this.parseMetaParam.bind(this)
-        ),
-        consts: tmp.RuleSet.MetaInfo.Consts.Const.map(
-          this.parseMetaParam.bind(this)
-        ),
-        temps: tmp.RuleSet.MetaInfo.Temps.Temp.map(
-          this.parseMetaParam.bind(this)
-        ),
+        inputs:
+          ruleset.MetaInfo.Inputs.Input?.map(this.parseMetaParam.bind(this)) ??
+          [],
+        outputs:
+          ruleset.MetaInfo.Outputs.Output?.map(
+            this.parseMetaParam.bind(this)
+          ) ?? [],
+        caches:
+          ruleset.MetaInfo.Caches.Cache?.map(this.parseMetaParam.bind(this)) ??
+          [],
+        consts:
+          ruleset.MetaInfo.Consts.Const?.map(this.parseMetaParam.bind(this)) ??
+          [],
+        temps:
+          ruleset.MetaInfo.Temps.Temp?.map(this.parseMetaParam.bind(this)) ??
+          [],
       },
-      subSets: tmp.RuleSet.SubSets.SubSet.map(this.parseSubSet.bind(this)),
-      rules: tmp.RuleSet.Rules.Rule.map(this.parseRule.bind(this)),
+      subSets: ruleset.SubSets.SubSet?.map(this.parseSubSet.bind(this)) ?? [],
+      rules: ruleset.Rules.Rule?.map(this.parseRule.bind(this)) ?? [],
     };
+  }
+  public parse(xml: string): RuleSet {
+    console.log(xml);
+    const obj: {
+      "?xml": { "@version": string; "@encoding": string };
+      RuleSet: XmlRuleSet;
+    } = this.parser.parse(xml);
+    console.log(obj);
+    return this.parseRuleSet(obj.RuleSet);
   }
 }
 

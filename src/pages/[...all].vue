@@ -1,5 +1,5 @@
 <template>
-  <h2 class="text-secondary text-weight-bold">404</h2>
+  <h2 class="text-ignore text-weight-bold">404</h2>
 </template>
 
 <script setup lang="ts"></script>

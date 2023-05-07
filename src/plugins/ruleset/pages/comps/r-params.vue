@@ -7,7 +7,6 @@
     hide-pagination
     separator="cell"
     table-class="r-table"
-    table-header-class="bg-primary"
   >
     <template #body-cell="scope">
       <q-td :props="scope">
@@ -20,7 +19,6 @@
           v-model="rows.params"
           :row-index="scope.rowIndex"
           :template="template"
-          no-margin
           @update:model-value="update"
         />
       </q-td>

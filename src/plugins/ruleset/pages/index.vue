@@ -2,7 +2,6 @@
   <q-splitter
     v-model="percent"
     :limits="[15, 30]"
-    unit="%"
     separator-class="q-mx-sm transparent"
     class="fit q-pa-md"
   >
@@ -11,7 +10,6 @@
         :model-value="5"
         disable
         horizontal
-        unit="%"
         separator-class="q-my-sm"
         class="fit q-pa-md bg-secondary"
       >
@@ -26,7 +24,7 @@
               class="full-width"
             >
               <template #prepend>
-                <q-icon name="bi-search" size="xs" class="text-foreground" />
+                <q-icon name="bi-search" size="xs" />
               </template>
             </q-input>
           </div>
@@ -55,7 +53,6 @@
         :model-value="5"
         disable
         horizontal
-        unit="%"
         separator-class="q-my-sm"
         class="fit q-pa-md bg-secondary"
       >
@@ -67,7 +64,7 @@
               round
               size="sm"
               icon="bi-bug"
-              class="bg-secondary ui-clickable"
+              class="ui-clickable"
               @click="validate"
             >
               <q-tooltip self="center middle" anchor="top right">
@@ -80,7 +77,7 @@
               round
               size="sm"
               icon="bi-save"
-              class="bg-secondary ui-clickable"
+              class="ui-clickable"
               @click="save"
             >
               <q-tooltip self="center middle" anchor="top left">
@@ -169,6 +166,7 @@ import rSubsets from "./comps/r-subsets.vue";
 import rRules from "./comps/r-rules.vue";
 
 const $q = useQuasar();
+const route = useRoute();
 const store = useRuleSetStore();
 
 const percent = ref(15);
@@ -207,6 +205,7 @@ async function save() {
   if (success) {
     try {
       await store.save();
+      selected.value = store.ruleset.id;
       $q.notify({
         type: "positive",
         message: "保存成功",
@@ -221,6 +220,20 @@ async function save() {
   }
   saving.value = false;
 }
+
+watch(
+  () => route.query.id,
+  async (val) => {
+    if (val) {
+      const id = parseInt(route.query.id as string);
+      if (id) {
+        await store.load(id);
+        selected.value = store.ruleset.id;
+      }
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style scoped lang="scss">

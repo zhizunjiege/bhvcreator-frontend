@@ -3,16 +3,16 @@
 // used for light mode
 $light-colors: (
   primary: #1976d2ff,
-  secondary: #26a69aff,
+  secondary: #f0f0f0ff,
   positive: #21ba45ff,
   info: #31ccecff,
   warning: #f2c037ff,
   negative: #c10015ff,
-  accent: #00e0ffff,
+  accent: #9c27b0ff,
   ignore: #afafafaf,
   disable: #efefefef,
   foreground: #000000ff,
-  background: #f0f0f0ff,
+  background: #ffffffff,
 );
 body.body--light {
   @each $name, $color in $light-colors {

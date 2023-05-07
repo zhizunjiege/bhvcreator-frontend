@@ -2,56 +2,47 @@
   <q-splitter
     v-model="percent"
     :limits="[20, 40]"
-    unit="%"
     separator-class="q-mx-sm transparent"
     class="r-splitter"
   >
     <template #before>
-      <q-splitter
-        :model-value="9"
-        disable
-        horizontal
-        unit="%"
-        separator-class="q-my-sm"
-        class="fit q-pa-md bg-primary"
-      >
-        <template #before>
-          <div class="full-width flex justify-center">
-            <r-actions
-              v-model="rows.types"
-              :row-index="selected"
-              :template="typeTemplate"
-              :actions="rows.types.length > 0 ? 'add/copy/del' : 'add'"
-              @update:model-value="update"
-              @action:del="selected = 0"
-            />
-          </div>
-        </template>
-        <template #after>
-          <q-tabs
-            v-if="rows.types.length > 0"
-            v-model="selected"
-            dense
-            vertical
-            no-caps
-            outside-arrows
-            active-color="accent"
-          >
-            <q-tab
-              v-for="(r, i) in rows.types"
-              :key="i"
-              :name="i"
-              :label="r.type"
-            />
-          </q-tabs>
-          <div
-            v-else
-            class="fit flex flex-center bg-transparent text-ignore text-weight-bold text-h4"
-          >
-            无
-          </div>
-        </template>
-      </q-splitter>
+      <div class="fit column no-wrap overflow-hidden">
+        <q-card flat>
+          <q-card-section class="q-py-sm">
+            <div class="full-width flex justify-center">
+              <r-actions
+                v-model="rows.types"
+                :row-index="selected"
+                :template="typeTemplate"
+                :actions="rows.types.length > 0 ? 'add/copy/del' : 'add'"
+                @update:model-value="update"
+                @action:del="selected = 0"
+              />
+            </div>
+          </q-card-section>
+        </q-card>
+        <q-separator />
+        <q-card flat class="col-grow">
+          <q-card-section class="fit q-py-sm q-px-none">
+            <q-scroll-area v-if="rows.types.length > 0" class="fit">
+              <q-tabs
+                v-model="selected"
+                dense
+                vertical
+                no-caps
+                active-color="accent"
+              >
+                <q-tab
+                  v-for="(r, i) in rows.types"
+                  :key="i"
+                  :name="i"
+                  :label="r.type"
+                />
+              </q-tabs>
+            </q-scroll-area>
+          </q-card-section>
+        </q-card>
+      </div>
     </template>
     <template #after>
       <template v-if="rows.types.length > 0">
@@ -71,7 +62,7 @@
             </tr>
           </tbody>
         </q-markup-table>
-        <q-separator color="transparent" class="q-my-sm" />
+        <q-separator color="transparent" class="q-my-xs" />
         <q-table
           :rows="rows.types[selected].variables"
           :columns="variableColumns"
@@ -80,7 +71,6 @@
           hide-pagination
           separator="cell"
           table-class="r-table"
-          table-header-class="bg-primary"
         >
           <template #body-cell="scope">
             <q-td :props="scope">
@@ -109,12 +99,13 @@
           </template>
         </q-table>
       </template>
-      <div
+      <q-card
         v-else
-        class="fit flex flex-center bg-primary text-ignore text-weight-bold text-h4"
+        flat
+        class="fit flex flex-center text-ignore text-h4 text-weight-bold"
       >
         无
-      </div>
+      </q-card>
     </template>
   </q-splitter>
 </template>

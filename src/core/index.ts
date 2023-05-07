@@ -128,17 +128,17 @@ export class Core {
     data: Partial<DBTables[T]>
   ): Promise<{ lastrowid: number; rowcount: number }> {
     const id = data.id ?? -1;
-    if (id < 0) {
-      const rst = await this.insert(table, data as DBTables[T]);
-      return {
-        lastrowid: rst.lastrowid,
-        rowcount: 1,
-      };
-    } else {
+    if (id > 0) {
       const rst = await this.update(table, data);
       return {
         lastrowid: id,
         rowcount: rst.rowcount,
+      };
+    } else {
+      const rst = await this.insert(table, data as DBTables[T]);
+      return {
+        lastrowid: rst.lastrowid,
+        rowcount: 1,
       };
     }
   }

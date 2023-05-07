@@ -2,7 +2,7 @@
   <q-layout view="hHh lpR fFf" class="fullscreen">
     <q-header class="bg-primary">
       <q-toolbar>
-        <q-toolbar-title shrink class="text-accent">
+        <q-toolbar-title shrink>
           <q-img :src="Logo" width="2rem" alt="Logo" class="q-mr-sm" />
           规则行为建模软件
         </q-toolbar-title>
@@ -14,7 +14,7 @@
               fit
               anchor="bottom left"
               self="top left"
-              class="bg-secondary text-subtitle2"
+              class="text-subtitle2"
             >
               <q-list dense>
                 <template v-for="plugin in core.plugins">
@@ -38,7 +38,7 @@
                       <q-menu
                         anchor="top end"
                         self="top start"
-                        class="bg-secondary text-subtitle2"
+                        class="text-subtitle2"
                       >
                         <q-list dense>
                           <q-item
