@@ -69,7 +69,7 @@ export class Core {
   public async select<T extends keyof DBTables>(
     table: T,
     columns: string[] = [],
-    options: { id?: number } = {}
+    options: Partial<DBTables[T]> = {}
   ): Promise<DBTables[T][]> {
     const colArgs = columns.map((v) => `columns=${v as string}`);
     const optArgs = Object.entries(options).map(([k, v]) => `${k}=${v}`);

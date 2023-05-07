@@ -412,12 +412,10 @@ class RuleSetPlugin implements Plugin {
     };
   }
   public parse(xml: string): RuleSet {
-    console.log(xml);
     const obj: {
       "?xml": { "@version": string; "@encoding": string };
       RuleSet: XmlRuleSet;
     } = this.parser.parse(xml);
-    console.log(obj);
     return this.parseRuleSet(obj.RuleSet);
   }
 }
