@@ -11,60 +11,6 @@
         {{ props.title }}
       </q-card-section>
       <q-card-section>
-        <p class="text-subtitle2">赋值操作</p>
-        <q-table
-          :rows="consequence.assignments"
-          :columns="assignmentColumns"
-          :pagination="{ rowsPerPage: 0 }"
-          flat
-          hide-pagination
-          separator="cell"
-          table-class="r-table"
-        >
-          <template #header-cell-value="scope">
-            <q-th :props="scope" colspan="3">
-              {{ scope.col.label }}
-            </q-th>
-          </template>
-          <template #body-cell="scope">
-            <q-td :props="scope">
-              <q-input v-model="scope.row[scope.col.field]" dense borderless />
-            </q-td>
-          </template>
-          <template #body-cell-index="scope">
-            <q-td :props="scope">
-              {{ scope.rowIndex + 1 }}
-            </q-td>
-          </template>
-          <template #body-cell-value="scope">
-            <q-td :props="scope" colspan="3">
-              <q-input v-model="scope.row[scope.col.field]" dense borderless />
-            </q-td>
-          </template>
-          <template #body-cell-actions="scope">
-            <q-td :props="scope">
-              <r-actions
-                v-model="consequence.assignments"
-                :row-index="scope.rowIndex"
-                :template="assignmentTemplate"
-                @update:model-value="update"
-              />
-            </q-td>
-          </template>
-          <template #no-data>
-            <div class="full-width flex justify-center">
-              <r-actions
-                v-model="consequence.assignments"
-                :template="assignmentTemplate"
-                actions="add"
-                @update:model-value="update"
-              />
-            </div>
-          </template>
-        </q-table>
-      </q-card-section>
-      <q-card-section>
-        <p class="text-subtitle2">数组操作</p>
         <q-table
           :rows="consequence.operations"
           :columns="operationColumns"
@@ -74,7 +20,7 @@
           separator="cell"
           table-class="r-table"
         >
-          <template #header-cell-args="scope">
+          <template #header-cell-value="scope">
             <q-th :props="scope" colspan="2">
               {{ scope.col.label }}
             </q-th>
@@ -93,7 +39,7 @@
             <q-td :props="scope">
               <q-select
                 v-model="scope.row[scope.col.field]"
-                :options="['push', 'resize']"
+                :options="['assign', 'resize', 'push']"
                 dense
                 borderless
                 options-dense
@@ -103,7 +49,7 @@
               />
             </q-td>
           </template>
-          <template #body-cell-args="scope">
+          <template #body-cell-value="scope">
             <q-td :props="scope" colspan="2">
               <q-input v-model="scope.row[scope.col.field]" dense borderless />
             </q-td>
@@ -150,39 +96,35 @@ const emits = defineEmits<{
 
 const consequence = computed(() => props.modelValue);
 
-const assignmentColumns = [
-  { name: "index", label: "序号", field: "", align: "center" },
-  { name: "target", label: "目标", field: "target", align: "center" },
-  { name: "value", label: "取值", field: "value", align: "center" },
-  { name: "actions", label: "操作", field: "", align: "center" },
-] as QTableColumn[];
 const operationColumns = [
   { name: "index", label: "序号", field: "", align: "center" },
   { name: "target", label: "目标", field: "target", align: "center" },
-  { name: "method", label: "方法", field: "operation", align: "center" },
-  { name: "args", label: "参数", field: "args", align: "center" },
+  { name: "method", label: "方法", field: "method", align: "center" },
+  { name: "value", label: "取值", field: "value", align: "center" },
   { name: "actions", label: "操作", field: "", align: "center" },
 ] as QTableColumn[];
 
-const assignmentTemplate = () => ({
-  target: "",
-  value: "",
-});
 const operationTemplate = () => ({
   target: "",
-  operation: "",
-  args: "",
+  method: "assign",
+  value: "",
 });
 
 const dialogShow = ref(false);
 const displayText = computed(() => {
-  const a = consequence.value.assignments.map(
-    (e) => `${e.target} = ${e.value}`
+  return (
+    consequence.value.operations
+      .map((e) => {
+        switch (e.method) {
+          case "assign":
+            return `${e.target} = ${e.value}`;
+          case "resize":
+          case "push":
+            return `${e.target}.${e.method}(${e.value})`;
+        }
+      })
+      .join("; ") || "无"
   );
-  const o = consequence.value.operations.map(
-    (e) => `${e.target}.${e.operation}(${e.args})`
-  );
-  return a.concat(o).join("; ") || "无";
 });
 
 function update() {

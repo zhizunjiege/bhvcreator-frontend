@@ -18,14 +18,10 @@ export interface Condition {
   expressions: string[];
 }
 export interface Consequence {
-  assignments: {
-    target: string;
-    value: string;
-  }[];
   operations: {
     target: string;
-    operation: string;
-    args: string;
+    method: string;
+    value: string;
   }[];
 }
 export interface TypeDefine {
@@ -83,14 +79,10 @@ type XmlCondition = {
   Expression?: string[];
 };
 type XmlConsequence = {
-  Assignment?: {
+  Operation?: {
     Target: string;
+    Method: string;
     Value: string;
-  }[];
-  ArrayOperation?: {
-    Target: string;
-    Operation: string;
-    Args: string;
   }[];
 };
 type XmlTypeDefine = {
@@ -179,8 +171,7 @@ class RuleSetPlugin implements Plugin {
     "SubSet",
     "Rule",
     "Expression",
-    "Assignment",
-    "ArrayOperation",
+    "Operation",
   ];
   private builder = new XMLBuilder({
     ignoreAttributes: false,
@@ -216,14 +207,10 @@ class RuleSetPlugin implements Plugin {
   }
   private buildConsequence(consequence: Consequence): XmlConsequence {
     return {
-      Assignment: consequence.assignments.map((item) => ({
+      Operation: consequence.operations.map((item) => ({
         Target: item.target,
+        Method: item.method,
         Value: item.value,
-      })),
-      ArrayOperation: consequence.operations.map((item) => ({
-        Target: item.target,
-        Operation: item.operation,
-        Args: item.args,
       })),
     };
   }
@@ -331,16 +318,11 @@ class RuleSetPlugin implements Plugin {
   }
   private parseConsequence(consequence: XmlConsequence): Consequence {
     return {
-      assignments:
-        consequence.Assignment?.map((item) => ({
-          target: item.Target,
-          value: item.Value,
-        })) ?? [],
       operations:
-        consequence.ArrayOperation?.map((item) => ({
+        consequence.Operation?.map((item) => ({
           target: item.Target,
-          operation: item.Operation,
-          args: item.Args,
+          method: item.Method,
+          value: item.Value,
         })) ?? [],
     };
   }
