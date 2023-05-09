@@ -36,6 +36,7 @@
                         <q-icon name="bi-chevron-right" size="xs" />
                       </q-item-section>
                       <q-menu
+                        fit
                         anchor="top end"
                         self="top start"
                         class="text-subtitle2"

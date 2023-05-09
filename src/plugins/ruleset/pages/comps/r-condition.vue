@@ -53,11 +53,12 @@
           </template>
           <template #body-cell-value="scope">
             <q-td :props="scope" colspan="3">
-              <q-input
+              <!-- <q-input
                 v-model="condition.expressions[scope.rowIndex]"
                 dense
                 borderless
-              />
+              /> -->
+              <r-expression v-model="condition.expressions[scope.rowIndex]" />
             </q-td>
           </template>
           <template #body-cell-actions="scope">
@@ -90,6 +91,7 @@
 import { QTableColumn } from "quasar";
 import { Condition } from "../..";
 
+import rExpression from "./r-expression.vue";
 import rActions from "./r-actions.vue";
 
 const props = defineProps<{
@@ -111,16 +113,11 @@ const expressionColumns = [
 const expressionTemplate = () => "true";
 
 const dialogShow = ref(false);
-const joinSymbols = { and: "&&", or: "||" };
 const displayText = computed(() => {
   const expressions = condition.value.expressions;
-  if (expressions.length > 1) {
-    return expressions
-      .map((e) => `(${e})`)
-      .join(` ${joinSymbols[condition.value.join]} `);
-  } else {
-    return expressions[0];
-  }
+  return expressions.length > 1
+    ? expressions.map((e) => `(${e})`).join(` ${condition.value.join} `)
+    : expressions[0];
 });
 
 function update() {

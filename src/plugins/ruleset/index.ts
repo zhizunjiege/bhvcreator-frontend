@@ -66,30 +66,30 @@ export interface RuleSet {
   rules: Rule[];
 }
 
-type XmlParameter = {
+interface XmlParameter {
   "@name": string;
   "@type": string;
-};
-type XmlMetaParam = XmlParameter & {
+}
+interface XmlMetaParam extends XmlParameter {
   "@desc": string;
   Value: string;
-};
-type XmlCondition = {
+}
+interface XmlCondition {
   "@join": "and" | "or";
   Expression?: string[];
-};
-type XmlConsequence = {
+}
+interface XmlConsequence {
   Operation?: {
     Target: string;
     Method: string;
     Value: string;
   }[];
-};
-type XmlTypeDefine = {
+}
+interface XmlTypeDefine {
   "@type": string;
   Variable?: XmlParameter[];
-};
-type XmlFuncDefine = {
+}
+interface XmlFuncDefine {
   "@type": string;
   Symbol: string;
   Params: {
@@ -99,15 +99,15 @@ type XmlFuncDefine = {
     "@type": string;
     Value: string;
   };
-};
-type XmlRule = {
+}
+interface XmlRule {
   "@id": string;
   "@name": string;
   "@desc": string;
   Condition: XmlCondition;
   Consequence: XmlConsequence;
-};
-type XmlSubSet = {
+}
+interface XmlSubSet {
   "@id": string;
   "@name": string;
   "@desc": string;
@@ -118,8 +118,8 @@ type XmlSubSet = {
   Rules: {
     Rule?: XmlRule[];
   };
-};
-type XmlRuleSet = {
+}
+interface XmlRuleSet {
   TypeDefines: {
     TypeDefine?: XmlTypeDefine[];
   };
@@ -149,7 +149,7 @@ type XmlRuleSet = {
   Rules: {
     Rule?: XmlRule[];
   };
-};
+}
 
 class RuleSetPlugin implements Plugin {
   public name = PLUGIN_NAME;
@@ -177,7 +177,6 @@ class RuleSetPlugin implements Plugin {
     ignoreAttributes: false,
     attributeNamePrefix: "@",
     suppressEmptyNode: true,
-    format: true,
   });
   private parser = new XMLParser({
     ignoreAttributes: false,
@@ -289,12 +288,14 @@ class RuleSetPlugin implements Plugin {
       },
     };
   }
-  public build(ruleset: RuleSet): string {
-    const obj = {
+  public buildRaw(ruleset: XmlRuleSet): string {
+    return this.builder.build({
       "?xml": { "@version": "1.0", "@encoding": "UTF-8" },
-      RuleSet: this.buildRuleSet(ruleset),
-    };
-    return this.builder.build(obj);
+      RuleSet: ruleset,
+    });
+  }
+  public build(ruleset: RuleSet): string {
+    return this.buildRaw(this.buildRuleSet(ruleset));
   }
 
   private parseParameter(param: XmlParameter): Parameter {
@@ -329,15 +330,14 @@ class RuleSetPlugin implements Plugin {
   private parseTypeDefine(typeDefine: XmlTypeDefine): TypeDefine {
     return {
       type: typeDefine["@type"],
-      variables: typeDefine.Variable?.map(this.parseParameter.bind(this)) ?? [],
+      variables: typeDefine.Variable?.map(this.parseParameter) ?? [],
     };
   }
   private parseFuncDefine(funcDefine: XmlFuncDefine): FuncDefine {
     return {
       type: funcDefine["@type"],
       symbol: funcDefine.Symbol,
-      params:
-        funcDefine.Params.Param?.map(this.parseParameter.bind(this)) ?? [],
+      params: funcDefine.Params.Param?.map(this.parseParameter) ?? [],
       return: {
         type: funcDefine.Return["@type"],
         value: funcDefine.Return.Value,
@@ -393,12 +393,11 @@ class RuleSetPlugin implements Plugin {
       rules: ruleset.Rules.Rule?.map(this.parseRule.bind(this)) ?? [],
     };
   }
+  public parseRaw(xml: string): XmlRuleSet {
+    return this.parser.parse(xml).RuleSet;
+  }
   public parse(xml: string): RuleSet {
-    const obj: {
-      "?xml": { "@version": string; "@encoding": string };
-      RuleSet: XmlRuleSet;
-    } = this.parser.parse(xml);
-    return this.parseRuleSet(obj.RuleSet);
+    return this.parseRuleSet(this.parseRaw(xml));
   }
 }
 

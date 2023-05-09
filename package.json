@@ -11,6 +11,7 @@
     "@quasar/extras": "^1.15.11",
     "browser-fs-access": "^0.33.1",
     "fast-xml-parser": "^4.2.2",
+    "monaco-editor": "^0.38.0",
     "path-browserify": "^1.0.1",
     "pinia": "^2.0.32",
     "quasar": "^2.11.7",

@@ -10,14 +10,11 @@
       <q-card-section class="text-center text-subtitle1">
         表达式
       </q-card-section>
-      <q-card-section>
-        <q-input
+      <q-card-section class="r-container">
+        <monaco-editor
           :model-value="modelValue"
-          dense
-          filled
-          autogrow
-          type="textarea"
-          @update:model-value="emits('update:modelValue', $event as string)"
+          language="ruleexpr"
+          @update:model-value="emits('update:modelValue', $event)"
         />
       </q-card-section>
     </q-card>
@@ -38,7 +35,10 @@ const displayText = computed(() => props.modelValue.trim() || "无");
 
 <style scoped lang="scss">
 .r-card {
-  max-width: 60%;
-  width: 60%;
+  max-width: 100vw;
+}
+.r-container {
+  width: 50vw;
+  height: 50vh;
 }
 </style>

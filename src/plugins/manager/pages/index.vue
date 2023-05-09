@@ -46,7 +46,7 @@
               round
               size="sm"
               icon="bi-trash"
-              class="float-right"
+              class="float-right ui-clickable"
               @click="dropItems"
             >
               <q-tooltip anchor="top middle" self="bottom middle">
@@ -83,7 +83,11 @@
             <template #body-cell="scope">
               <q-td :props="scope" class="ellipsis">
                 {{ scope.value }}
-                <q-tooltip anchor="top middle" self="bottom middle">
+                <q-tooltip
+                  v-if="scope.value"
+                  anchor="top middle"
+                  self="bottom middle"
+                >
                   {{ scope.value }}
                 </q-tooltip>
               </q-td>
@@ -95,7 +99,7 @@
                   round
                   size="sm"
                   icon="bi-folder"
-                  class="q-mx-sm"
+                  class="q-mx-xs ui-clickable"
                   @click="openItem(scope.row.id)"
                 >
                   <q-tooltip anchor="top middle" self="bottom middle">
@@ -107,11 +111,23 @@
                   round
                   size="sm"
                   icon="bi-files"
-                  class="q-mx-sm"
+                  class="q-mx-xs ui-clickable"
                   @click="copyItem(scope.row.id)"
                 >
                   <q-tooltip anchor="top middle" self="bottom middle">
                     重复
+                  </q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  size="sm"
+                  icon="bi-cloud-download"
+                  class="q-mx-xs ui-clickable"
+                  @click="convert(scope.row.id)"
+                >
+                  <q-tooltip anchor="top middle" self="bottom middle">
+                    导出
                   </q-tooltip>
                 </q-btn>
               </q-td>
@@ -306,6 +322,13 @@ async function copyItem(id: number) {
   }
 }
 
+function convert(id: number) {
+  router.push({
+    name: "export",
+    query: { table: selectedTable.value, id },
+  });
+}
+
 async function dropItems() {
   $q.dialog({
     title: "提示",
@@ -390,3 +413,7 @@ async function dropItems() {
   }
 }
 </style>
+
+<route lang="yaml">
+name: manager
+</route>

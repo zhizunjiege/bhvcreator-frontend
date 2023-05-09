@@ -12,6 +12,7 @@ import "~/styles/index.scss";
 
 import App from "~/App.vue";
 
+import { createEditor } from "./editor";
 import { createCore } from "~/core";
 import { createPlugins } from "~/plugins";
 
@@ -35,6 +36,9 @@ const router = createRouter({
 // config pinia
 const pinia = createPinia();
 
+// config editor
+const editor = createEditor();
+
 // config core
 const core = createCore({
   plugins: createPlugins(),
@@ -45,5 +49,6 @@ createApp(App)
   .use(Quasar, quasarConfig)
   .use(router)
   .use(pinia)
+  .use(editor)
   .use(core)
   .mount("#app");
