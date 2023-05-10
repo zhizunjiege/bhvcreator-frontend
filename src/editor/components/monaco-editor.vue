@@ -9,9 +9,11 @@ const props = withDefaults(
     modelValue: string;
     language: string;
     readonly?: boolean;
+    minimap?: boolean;
   }>(),
   {
     readonly: false,
+    minimap: false,
   }
 );
 const emits = defineEmits<{
@@ -30,20 +32,23 @@ onMounted(() => {
     readOnly: props.readonly,
     language: props.language,
     automaticLayout: true,
+    minimap: {
+      enabled: props.minimap,
+    },
   });
+  watch(
+    () => $q.dark.isActive,
+    (v) => {
+      monaco.editor.setTheme(v ? "dark" : "light");
+    },
+    {
+      immediate: true,
+    }
+  );
   watch(
     () => props.modelValue,
     () => {
       editor!.setValue(props.modelValue);
-    }
-  );
-  watch(
-    () => $q.dark.isActive,
-    (v) => {
-      monaco.editor.setTheme(v ? "vs-dark" : "vs");
-    },
-    {
-      immediate: true,
     }
   );
   editor.onDidBlurEditorText(() => {

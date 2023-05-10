@@ -51,7 +51,7 @@
           </template>
           <template #body-cell-value="scope">
             <q-td :props="scope" colspan="2">
-              <q-input v-model="scope.row[scope.col.field]" dense borderless />
+              <r-expression v-model="scope.row[scope.col.field]" />
             </q-td>
           </template>
           <template #body-cell-actions="scope">
@@ -84,6 +84,7 @@
 import { QTableColumn } from "quasar";
 import { Consequence } from "../..";
 
+import rExpression from "./r-expression.vue";
 import rActions from "./r-actions.vue";
 
 const props = defineProps<{

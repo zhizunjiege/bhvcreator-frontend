@@ -324,8 +324,8 @@ async function copyItem(id: number) {
 
 function convert(id: number) {
   router.push({
-    name: "export",
-    query: { table: selectedTable.value, id },
+    name: "convert",
+    query: { mode: "export", table: selectedTable.value, id },
   });
 }
 

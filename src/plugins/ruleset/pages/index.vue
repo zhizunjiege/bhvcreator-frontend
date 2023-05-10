@@ -63,11 +63,25 @@
               flat
               round
               size="sm"
+              icon="bi-x-circle"
+              class="ui-clickable"
+              @click="clear"
+            >
+              <q-tooltip anchor="top middle" self="center middle">
+                清空
+              </q-tooltip>
+            </q-btn>
+            <q-space />
+            <q-btn
+              :loading="saving"
+              flat
+              round
+              size="sm"
               icon="bi-bug"
               class="ui-clickable"
-              @click="validate"
+              @click="valid"
             >
-              <q-tooltip self="center middle" anchor="top right">
+              <q-tooltip anchor="top middle" self="center middle">
                 校验
               </q-tooltip>
             </q-btn>
@@ -77,10 +91,10 @@
               round
               size="sm"
               icon="bi-save"
-              class="ui-clickable"
+              class="q-ml-md ui-clickable"
               @click="save"
             >
-              <q-tooltip self="center middle" anchor="top left">
+              <q-tooltip anchor="top middle" self="center middle">
                 保存
               </q-tooltip>
             </q-btn>
@@ -177,9 +191,14 @@ const selected = ref(store.ruleset.id);
 const tree = ref(null as Nullable<QTree>);
 const node = computed(() => tree.value?.getNodeByKey(selected.value));
 
+function clear() {
+  store.$reset();
+  selected.value = store.ruleset.id;
+}
+
 const validating = ref(false);
 
-function validate() {
+function valid() {
   validating.value = true;
   const result = store.validate();
   if (result.success) {
@@ -201,7 +220,7 @@ const saving = ref(false);
 
 async function save() {
   saving.value = true;
-  const success = validate();
+  const success = valid();
   if (success) {
     try {
       await store.save();

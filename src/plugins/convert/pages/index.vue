@@ -7,7 +7,7 @@
       class="fit q-pa-lg"
     >
       <template #before>
-        <monaco-editor v-model="xml" readonly language="xml" />
+        <monaco-editor v-model="xml" minimap readonly language="xml" />
       </template>
       <template #after>
         <div class="fit flex flex-center">
@@ -39,13 +39,31 @@
             </q-card>
             <q-card flat class="col-grow transparent">
               <q-card-section class="fit">
-                <component :is="getAsyncComp()" v-model="options" />
+                <component
+                  :is="getAsyncComp(mode)"
+                  v-if="mode"
+                  v-model="options"
+                />
               </q-card-section>
             </q-card>
             <q-card flat class="transparent">
               <q-card-section>
                 <q-btn-group spread>
-                  <q-btn color="primary" label="导出" @click="export_" />
+                  <q-btn
+                    :disable="mode !== 'import'"
+                    icon="bi-arrow-up-right-circle"
+                    color="primary"
+                    label="导入"
+                    @click="import_"
+                  />
+                  <q-separator vertical />
+                  <q-btn
+                    :disable="mode !== 'export'"
+                    icon="bi-arrow-down-left-circle"
+                    color="primary"
+                    label="导出"
+                    @click="export_"
+                  />
                 </q-btn-group>
               </q-card-section>
             </q-card>
@@ -57,33 +75,84 @@
 </template>
 
 <script setup lang="ts">
-import { fileSave } from "browser-fs-access";
+import { fileOpen, fileSave } from "browser-fs-access";
 import { useCore } from "~/core";
 import { useConvert } from "..";
-import { ExportOptions } from "../plugins";
+import { ImportOptions, ExportOptions } from "../plugins";
+
+type Plugin = keyof ImportOptions & keyof ExportOptions;
 
 const $q = useQuasar();
 const route = useRoute();
 const core = useCore();
 const plugin = useConvert();
 
-const percent = ref(60);
-
+const mode = computed(() => route.query.mode as "import" | "export");
 const table = computed(() => route.query.table as string);
 const id = computed(() => parseInt(route.query.id as string));
+
+const percent = ref(60);
 
 const targetOptions = ["CQSIM"];
 const target = ref(targetOptions[0]);
 
-function getAsyncComp() {
+function getAsyncComp(mode: "import" | "export") {
   return defineAsyncComponent(
-    () => import(`./comps/${target.value.toLowerCase()}/export.vue`)
+    () => import(`../plugins/${target.value.toLowerCase()}/${mode}.vue`)
   );
 }
 
 const xml = ref("");
 
-const options = ref({} as ExportOptions[keyof ExportOptions]);
+const options = ref({} as ImportOptions[Plugin] | ExportOptions[Plugin]);
+
+async function upload() {
+  const blob = await fileOpen({
+    description: "model.xml",
+    extensions: [".xml"],
+    mimeTypes: ["application/xml"],
+    multiple: false,
+  });
+  xml.value = await blob.text();
+}
+async function import_() {
+  try {
+    try {
+      await upload();
+    } catch (e) {
+      $q.notify({
+        type: "info",
+        message: "导入取消",
+      });
+    }
+    if (xml.value) {
+      const result = plugin.import_(
+        xml.value,
+        target.value as Plugin,
+        options.value as ImportOptions[Plugin]
+      );
+      await core.insert("ruleset", {
+        id: 0,
+        name: "导入规则集",
+        version: "1.0.0",
+        description: "",
+        mode: "normal",
+        xml: result,
+      });
+      $q.notify({
+        type: "positive",
+        message: "导入成功",
+      });
+    }
+  } catch (e) {
+    $q.notify({
+      type: "negative",
+      message: "导入失败：" + e,
+    });
+    console.error(e);
+  }
+}
+
 async function download() {
   const blob = new Blob([xml.value]);
   await fileSave(blob, {
@@ -99,8 +168,8 @@ async function export_() {
         if (res.length) {
           const result = plugin.export_(
             res[0].xml,
-            target.value as keyof ExportOptions,
-            options.value
+            target.value as Plugin,
+            options.value as ExportOptions[Plugin]
           );
           xml.value = result;
           try {
@@ -131,6 +200,8 @@ async function export_() {
     }
   }
 }
+
+watch(mode, () => (xml.value = ""));
 </script>
 
 <style scoped lang="scss">
@@ -148,5 +219,5 @@ async function export_() {
 </style>
 
 <route lang="yaml">
-name: export
+name: convert
 </route>

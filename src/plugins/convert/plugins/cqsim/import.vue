@@ -1,6 +1,6 @@
 <template>
   <q-scroll-area class="fit">
-    <q-markup-table flat separator="horizontal" class="cq-table">
+    <!-- <q-markup-table flat separator="horizontal" class="cq-table">
       <tbody>
         <tr>
           <td>推理模式</td>
@@ -20,12 +20,12 @@
           </td>
         </tr>
       </tbody>
-    </q-markup-table>
+    </q-markup-table> -->
   </q-scroll-area>
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
+/* const props = defineProps<{
   modelValue: {
     mode: string;
   };
@@ -41,11 +41,11 @@ options.value.mode = modeOptions[0];
 
 function update() {
   emits("update:modelValue", options.value);
-}
+} */
 </script>
 
 <style scoped lang="scss">
-.cq-table {
+/* .cq-table {
   :deep(table) {
     table-layout: fixed;
     th,
@@ -55,5 +55,5 @@ function update() {
       border-color: var(--ui-secondary) !important;
     }
   }
-}
+} */
 </style>

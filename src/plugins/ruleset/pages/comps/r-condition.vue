@@ -53,11 +53,6 @@
           </template>
           <template #body-cell-value="scope">
             <q-td :props="scope" colspan="3">
-              <!-- <q-input
-                v-model="condition.expressions[scope.rowIndex]"
-                dense
-                borderless
-              /> -->
               <r-expression v-model="condition.expressions[scope.rowIndex]" />
             </q-td>
           </template>

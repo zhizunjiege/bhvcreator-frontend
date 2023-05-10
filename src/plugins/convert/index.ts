@@ -17,7 +17,7 @@ class ConvertPlugin implements Plugin {
     items: [
       {
         label: "导入模型...",
-        to: "import",
+        to: "../convert?mode=import",
       },
     ],
   };
