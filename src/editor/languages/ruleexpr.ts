@@ -42,7 +42,6 @@ export default {
   ],
 
   operators: [
-    "=",
     "*",
     "/",
     "%",
@@ -58,6 +57,7 @@ export default {
     "!=",
     "&&",
     "||",
+    "=",
   ],
 
   builtins: [

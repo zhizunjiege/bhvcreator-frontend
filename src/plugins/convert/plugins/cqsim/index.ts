@@ -37,10 +37,12 @@ interface CQSIMTypeDefine {
   Variable: CQSIMParameter[];
 }
 interface CQSIMRule {
+  "#comment": string[];
   Condition: CQSIMCondition;
   Consequence: CQSIMConsequence;
 }
 interface CQSIMSubRuleSet {
+  "#comment": string[];
   Rules: {
     Rule: CQSIMRule[];
   };
@@ -71,7 +73,7 @@ export interface CQSIMExportOptions {
 }
 
 export interface CQSIMImportOptions {
-  mode: string;
+  reserved: never;
 }
 
 export class CQSIMConvertPlugin implements ConvertChildPlugin {
@@ -89,12 +91,14 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
   private builder = new XMLBuilder({
     ignoreAttributes: false,
     attributeNamePrefix: "@",
+    commentPropName: "#comment",
     suppressEmptyNode: true,
     format: true,
   });
   private parser = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: "@",
+    commentPropName: "#comment",
     parseTagValue: false,
     isArray: (name) => this.arrayNames.includes(name),
   });
@@ -136,6 +140,7 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
   }
   private exportRule(rule: Rule): CQSIMRule {
     return {
+      "#comment": [rule.id, rule.name, rule.desc],
       Condition: this.exportCondition(rule.condition),
       Consequence: this.exportConsequence(rule.consequence),
     };
@@ -143,12 +148,13 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
   private exportSubSet(subset: SubSet): CQSIMSubRuleSet[] {
     const subSubSets = subset.subSets.map(this.exportSubSet.bind(this)).flat();
     subSubSets.push({
+      "#comment": [subset.id, subset.name, subset.desc],
       Rules: {
         Rule: subset.rules.map(this.exportRule.bind(this)),
       },
     });
     const condition = this.exportCondition(subset.condition).Expression;
-    if (condition) {
+    if (condition && condition !== "true") {
       for (const s of subSubSets) {
         if (s.Rules.Rule) {
           for (const r of s.Rules.Rule) {
@@ -222,7 +228,6 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
       value: param.InitValue ?? "",
     };
   }
-  // TODO: split expression
   private importCondition(condition: CQSIMCondition): Condition {
     return {
       join: "and",
@@ -246,18 +251,18 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
   }
   private importRule(rule: CQSIMRule): Rule {
     return {
-      id: randomString(8),
-      name: "规则",
-      desc: "",
+      id: rule["#comment"]?.[0] ?? randomString(8),
+      name: rule["#comment"]?.[1] ?? "规则",
+      desc: rule["#comment"]?.[2] ?? "",
       condition: this.importCondition(rule.Condition),
       consequence: this.importConsequence(rule.Consequence),
     };
   }
   private importSubSet(subset: CQSIMSubRuleSet): SubSet {
     return {
-      id: randomString(8),
-      name: "子集",
-      desc: "",
+      id: subset["#comment"]?.[0] ?? randomString(8),
+      name: subset["#comment"]?.[1] ?? "子集",
+      desc: subset["#comment"]?.[2] ?? "",
       condition: {
         join: "and",
         expressions: ["true"],
@@ -298,11 +303,9 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
 
   public import_(content: string, options: CQSIMImportOptions): RuleSet {
     const RuleSet = this.parser.parse(content);
-    switch (options.mode) {
-      case "normal":
-        return this.importRuleSet(RuleSet.RuleSet);
+    switch (options.reserved) {
       default:
-        throw new Error(`不支持的推理模式：${options.mode}`);
+        return this.importRuleSet(RuleSet.RuleSet);
     }
   }
 }

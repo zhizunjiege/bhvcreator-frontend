@@ -63,6 +63,9 @@
           <q-btn flat to="/home/settings" class="q-ml-lg text-subtitle1">
             设置
           </q-btn>
+          <q-btn flat to="/home/helper" class="q-ml-lg text-subtitle1">
+            帮助
+          </q-btn>
         </q-toolbar-title>
         <q-toolbar-title>
           <q-btn
