@@ -17,19 +17,23 @@ interface CQSIMParameter {
   "@type": string;
 }
 interface CQSIMMetaParam extends CQSIMParameter {
+  "#comment": string;
   InitValue?: string;
   Value?: {
     Expression: string;
   };
 }
 interface CQSIMCondition {
+  "#comment": string[];
   Expression: string;
 }
 interface CQSIMConsequence {
   Operation: {
     Target: string;
     Operation: string;
-    Args: string;
+    Args: {
+      Expression: string;
+    };
   }[];
 }
 interface CQSIMTypeDefine {
@@ -109,14 +113,25 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
       "@type": param.type,
     };
   }
-  private exportMetaParam(param: MetaParam): CQSIMMetaParam {
+  private exportInitParam(param: MetaParam): CQSIMMetaParam {
     return {
+      "#comment": param.desc,
       ...this.exportParameter(param),
-      InitValue: param.value,
+      ...(param.value ? { InitValue: param.value } : {}),
+    };
+  }
+  private exportTempParam(param: MetaParam): CQSIMMetaParam {
+    return {
+      "#comment": param.desc,
+      ...this.exportParameter(param),
+      Value: {
+        Expression: param.value,
+      },
     };
   }
   private exportCondition(condition: Condition): CQSIMCondition {
     return {
+      "#comment": [condition.join, ...condition.expressions],
       Expression: (condition.expressions.length > 1
         ? condition.expressions.map((e) => `(${e})`)
         : condition.expressions
@@ -128,7 +143,9 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
       Operation: consequence.operations.map((o) => ({
         Target: o.target,
         Operation: o.method,
-        Args: o.value,
+        Args: {
+          Expression: o.value,
+        },
       })),
     };
   }
@@ -146,26 +163,28 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
     };
   }
   private exportSubSet(subset: SubSet): CQSIMSubRuleSet[] {
-    const subSubSets = subset.subSets.map(this.exportSubSet.bind(this)).flat();
-    subSubSets.push({
-      "#comment": [subset.id, subset.name, subset.desc],
-      Rules: {
-        Rule: subset.rules.map(this.exportRule.bind(this)),
-      },
-    });
-    const condition = this.exportCondition(subset.condition).Expression;
-    if (condition && condition !== "true") {
-      for (const s of subSubSets) {
+    const subRuleSets = subset.subSets.map(this.exportSubSet.bind(this)).flat();
+    if (subset.rules.length > 0) {
+      subRuleSets.push({
+        "#comment": [subset.id, subset.name, subset.desc],
+        Rules: {
+          Rule: subset.rules.map(this.exportRule.bind(this)),
+        },
+      });
+    }
+    const condition = this.exportCondition(subset.condition);
+    if (condition.Expression && condition.Expression !== "true") {
+      for (const s of subRuleSets) {
         if (s.Rules.Rule) {
           for (const r of s.Rules.Rule) {
             if (r.Condition.Expression) {
-              r.Condition.Expression = `(${condition}) and (${r.Condition.Expression})`;
+              r.Condition.Expression = `(${condition.Expression}) and (${r.Condition.Expression})`;
             }
           }
         }
       }
     }
-    return subSubSets;
+    return subRuleSets;
   }
   private exportRuleSet(ruleset: RuleSet): CQSIMRuleSet {
     return {
@@ -175,27 +194,33 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
       },
       MetaInfo: {
         Inputs: {
-          Param: ruleset.metaInfo.inputs.map(this.exportMetaParam.bind(this)),
+          Param: ruleset.metaInfo.inputs.map(this.exportInitParam.bind(this)),
         },
         Outputs: {
-          Param: ruleset.metaInfo.outputs.map(this.exportMetaParam.bind(this)),
+          Param: ruleset.metaInfo.outputs.map(this.exportInitParam.bind(this)),
         },
         Caches: {
-          Param: ruleset.metaInfo.caches
-            .map(this.exportMetaParam.bind(this))
-            .concat(
-              ruleset.metaInfo.consts.map(this.exportMetaParam.bind(this)),
-              ruleset.metaInfo.temps.map((t) => ({
-                ...this.exportParameter(t),
-                Value: {
-                  Expression: t.value,
-                },
-              }))
-            ),
+          Param: [
+            ...ruleset.metaInfo.caches.map(this.exportInitParam.bind(this)),
+            ...ruleset.metaInfo.consts.map(this.exportTempParam.bind(this)),
+            ...ruleset.metaInfo.temps.map(this.exportTempParam.bind(this)),
+          ],
         },
       },
       SubRuleSets: {
-        SubRuleSet: ruleset.subSets.map(this.exportSubSet.bind(this)).flat(),
+        SubRuleSet: [
+          ...(ruleset.rules.length > 0
+            ? [
+                {
+                  "#comment": ["default", "default", "default"],
+                  Rules: {
+                    Rule: ruleset.rules.map(this.exportRule.bind(this)),
+                  },
+                },
+              ]
+            : []),
+          ...ruleset.subSets.map(this.exportSubSet.bind(this)).flat(),
+        ],
       },
     };
   }
@@ -221,17 +246,24 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
       type: param["@type"],
     };
   }
-  private importMetaParam(param: CQSIMMetaParam): MetaParam {
+  private importInitParam(param: CQSIMMetaParam): MetaParam {
     return {
       ...this.importParameter(param),
-      desc: "",
+      desc: param["#comment"] ?? "",
       value: param.InitValue ?? "",
+    };
+  }
+  private importTempParam(param: CQSIMMetaParam): MetaParam {
+    return {
+      ...this.importParameter(param),
+      desc: param["#comment"] ?? "",
+      value: param.Value?.Expression ?? "",
     };
   }
   private importCondition(condition: CQSIMCondition): Condition {
     return {
-      join: "and",
-      expressions: [condition.Expression],
+      join: (condition["#comment"]?.[0] as "and" | "or") ?? "and",
+      expressions: condition["#comment"]?.slice(1) ?? [condition.Expression],
     };
   }
   private importConsequence(consequence: CQSIMConsequence): Consequence {
@@ -239,7 +271,7 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
       operations: consequence.Operation.map((o) => ({
         target: o.Target,
         method: o.Operation,
-        value: o.Args,
+        value: o.Args.Expression,
       })),
     };
   }
@@ -258,45 +290,45 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
       consequence: this.importConsequence(rule.Consequence),
     };
   }
-  private importSubSet(subset: CQSIMSubRuleSet): SubSet {
+  private importSubSet(subRuleSet: CQSIMSubRuleSet): SubSet {
     return {
-      id: subset["#comment"]?.[0] ?? randomString(8),
-      name: subset["#comment"]?.[1] ?? "子集",
-      desc: subset["#comment"]?.[2] ?? "",
+      id: subRuleSet["#comment"]?.[0] ?? randomString(8),
+      name: subRuleSet["#comment"]?.[1] ?? "子集",
+      desc: subRuleSet["#comment"]?.[2] ?? "",
       condition: {
         join: "and",
         expressions: ["true"],
       },
       subSets: [],
-      rules: subset.Rules.Rule.map(this.importRule.bind(this)),
+      rules: subRuleSet.Rules.Rule.map(this.importRule.bind(this)),
     };
   }
   private importRuleSet(ruleset: CQSIMRuleSet): RuleSet {
     return {
-      typeDefines: ruleset.TypeDefines.TypeDefine.map(
-        this.importTypeDefine.bind(this)
-      ),
+      typeDefines:
+        ruleset.TypeDefines.TypeDefine?.map(this.importTypeDefine.bind(this)) ??
+        [],
       funcDefines: [],
       metaInfo: {
-        inputs: ruleset.MetaInfo.Inputs.Param.map(
-          this.importMetaParam.bind(this)
-        ),
-        outputs: ruleset.MetaInfo.Outputs.Param.map(
-          this.importMetaParam.bind(this)
-        ),
-        caches: ruleset.MetaInfo.Caches.Param.filter((p) => p.InitValue).map(
-          this.importMetaParam.bind(this)
-        ),
+        inputs:
+          ruleset.MetaInfo.Inputs.Param?.map(this.importInitParam.bind(this)) ??
+          [],
+        outputs:
+          ruleset.MetaInfo.Outputs.Param?.map(
+            this.importInitParam.bind(this)
+          ) ?? [],
+        caches:
+          ruleset.MetaInfo.Caches.Param?.filter((p) => !p.Value).map(
+            this.importInitParam.bind(this)
+          ) ?? [],
         consts: [],
-        temps: ruleset.MetaInfo.Caches.Param.filter((p) => p.Value).map(
-          (p) => ({
-            ...this.importParameter(p),
-            desc: "",
-            value: p.Value!.Expression,
-          })
-        ),
+        temps:
+          ruleset.MetaInfo.Caches.Param?.filter((p) => p.Value).map(
+            this.importTempParam.bind(this)
+          ) ?? [],
       },
-      subSets: ruleset.SubRuleSets.SubRuleSet.map(this.importSubSet.bind(this)),
+      subSets:
+        ruleset.SubRuleSets.SubRuleSet?.map(this.importSubSet.bind(this)) ?? [],
       rules: [],
     };
   }

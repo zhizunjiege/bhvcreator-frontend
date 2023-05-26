@@ -66,7 +66,7 @@ const columns = [
 const template = () => ({
   name: "param",
   type: "float64",
-  value: "0",
+  value: "",
   desc: "参数",
 });
 

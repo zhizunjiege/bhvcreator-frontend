@@ -35,7 +35,7 @@ class ConvertPlugin implements Plugin {
         return plugin.export_(rulesetPlugin.parse(ruleset), options);
       }
     }
-    throw new Error(`不支持的导出目标: ${target}`);
+    return ruleset;
   }
 
   public import_<T extends keyof ImportOptions>(
@@ -49,7 +49,7 @@ class ConvertPlugin implements Plugin {
         return rulesetPlugin.build(plugin.import_(content, options));
       }
     }
-    throw new Error(`不支持的导入目标: ${target}`);
+    return content;
   }
 }
 

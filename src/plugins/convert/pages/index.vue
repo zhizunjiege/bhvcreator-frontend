@@ -40,7 +40,7 @@
             <q-card flat class="col-grow transparent">
               <q-card-section class="fit">
                 <component
-                  :is="getAsyncComp(mode)"
+                  :is="getAsyncComp(target, mode)"
                   v-if="mode"
                   v-model="options"
                 />
@@ -93,12 +93,14 @@ const id = computed(() => parseInt(route.query.id as string));
 
 const percent = ref(60);
 
-const targetOptions = ["CQSIM"];
+const targetOptions = ["ASRAW", "CQSIM"];
 const target = ref(targetOptions[0]);
 
-function getAsyncComp(mode: "import" | "export") {
-  return defineAsyncComponent(
-    () => import(`../plugins/${target.value.toLowerCase()}/${mode}.vue`)
+function getAsyncComp(target: string, mode: "import" | "export") {
+  return defineAsyncComponent(() =>
+    import(`../plugins/${target.toLowerCase()}/${mode}.vue`).catch(
+      () => import(`../plugins/empty.vue`)
+    )
   );
 }
 

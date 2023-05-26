@@ -177,6 +177,7 @@ class RuleSetPlugin implements Plugin {
     ignoreAttributes: false,
     attributeNamePrefix: "@",
     suppressEmptyNode: true,
+    format: true,
   });
   private parser = new XMLParser({
     ignoreAttributes: false,
