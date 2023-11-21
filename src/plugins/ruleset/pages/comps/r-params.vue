@@ -1,6 +1,6 @@
 <template>
   <q-table
-    :rows="rows.params"
+    :rows="params"
     :columns="columns"
     :pagination="{ rowsPerPage: 0 }"
     flat
@@ -21,21 +21,15 @@
     <template #body-cell-acts="scope">
       <q-td :props="scope">
         <r-actions
-          v-model="rows.params"
+          v-model="params"
           :row-index="scope.rowIndex"
           :template="template"
-          @update:model-value="update"
         />
       </q-td>
     </template>
     <template #no-data>
       <div class="full-width flex justify-center">
-        <r-actions
-          v-model="rows.params"
-          :template="template"
-          actions="add"
-          @update:model-value="update"
-        />
+        <r-actions v-model="params" :template="template" actions="add" />
       </div>
     </template>
   </q-table>
@@ -51,17 +45,14 @@ import rActions from "./r-actions.vue";
 const props = defineProps<{
   modelValue: MetaParam[];
 }>();
-const emits = defineEmits<{
-  (e: "update:modelValue", modelValue: MetaParam[]): void;
-}>();
 
-const columns = [
+const columns: QTableColumn[] = [
   { name: "name", label: "名称", field: "name", align: "center" },
   { name: "type", label: "类型", field: "type", align: "center" },
   { name: "value", label: "初值", field: "value", align: "center" },
   { name: "desc", label: "描述", field: "desc", align: "center" },
   { name: "acts", label: "操作", field: "", align: "center" },
-] as QTableColumn[];
+];
 
 const template = () => ({
   name: "param",
@@ -70,13 +61,7 @@ const template = () => ({
   desc: "参数",
 });
 
-const rows = computed(() => ({
-  params: props.modelValue,
-}));
-
-function update() {
-  emits("update:modelValue", rows.value.params);
-}
+const params = computed(() => props.modelValue);
 </script>
 
 <style scoped lang="scss">

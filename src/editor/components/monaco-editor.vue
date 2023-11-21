@@ -20,9 +20,13 @@ const emits = defineEmits<{
   (e: "update:modelValue", value: string): void;
 }>();
 
-const container = ref(null as Nullable<HTMLElement>);
+const container = ref<Nullable<HTMLElement>>(null);
 
-let editor = null as Nullable<monaco.editor.IStandaloneCodeEditor>;
+let editor: Nullable<monaco.editor.IStandaloneCodeEditor> = null;
+
+defineExpose({
+  editor: computed(() => editor!),
+});
 
 const $q = useQuasar();
 

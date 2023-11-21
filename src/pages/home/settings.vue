@@ -1,6 +1,6 @@
 <template>
   <div class="fit flex flex-center">
-    <h2 class="text-ignore text-weight-bold">Hello World</h2>
+    <q-circular-progress indeterminate rounded size="4rem" color="accent" />
   </div>
 </template>
 

@@ -1,6 +1,6 @@
 <template>
   <q-table
-    :rows="rows.subsets"
+    :rows="subsets"
     :columns="columns"
     :pagination="{ rowsPerPage: 0 }"
     flat
@@ -8,7 +8,7 @@
     separator="cell"
     table-class="r-table"
   >
-    <template #header-cell-cond="scope">
+    <template #header-cell-acti="scope">
       <q-th :props="scope" colspan="2">
         {{ scope.col.label }}
       </q-th>
@@ -18,30 +18,24 @@
         <q-input v-model="scope.row[scope.col.field]" dense borderless />
       </q-td>
     </template>
-    <template #body-cell-cond="scope">
+    <template #body-cell-acti="scope">
       <q-td :props="scope" colspan="2">
-        <r-condition v-model="scope.row[scope.col.field]" title="子集条件" />
+        <r-expression v-model="scope.row[scope.col.field]" />
       </q-td>
     </template>
     <template #body-cell-acts="scope">
       <q-td :props="scope">
         <r-actions
-          v-model="rows.subsets"
+          v-model="subsets"
           :row-index="scope.rowIndex"
           :template="subsetTemplate"
-          @update:model-value="update"
           @action:copy="copy"
         />
       </q-td>
     </template>
     <template #no-data>
       <div class="full-width flex justify-center">
-        <r-actions
-          v-model="rows.subsets"
-          :template="subsetTemplate"
-          actions="add"
-          @update:model-value="update"
-        />
+        <r-actions v-model="subsets" :template="subsetTemplate" actions="add" />
       </div>
     </template>
   </q-table>
@@ -53,44 +47,32 @@ import { randomString } from "~/utils";
 import { SubSet } from "../..";
 
 import rActions from "./r-actions.vue";
-import rCondition from "./r-condition.vue";
+import rExpression from "./r-expression.vue";
 
 const props = defineProps<{
   modelValue: SubSet[];
 }>();
-const emits = defineEmits<{
-  (e: "update:modelValue", modelValue: SubSet[]): void;
-}>();
 
-const rows = computed(() => ({
-  subsets: props.modelValue,
-}));
+const subsets = computed(() => props.modelValue);
 
-const columns = [
+const columns: QTableColumn[] = [
   { name: "name", label: "子集名称", field: "name", align: "center" },
-  { name: "cond", label: "子集条件", field: "condition", align: "center" },
+  { name: "acti", label: "子集条件", field: "activation", align: "center" },
   { name: "desc", label: "子集描述", field: "desc", align: "center" },
   { name: "acts", label: "子集操作", field: "", align: "center" },
-] as QTableColumn[];
+];
 
 const subsetTemplate = () => ({
   id: randomString(8),
   name: "未命名子集",
   desc: "未命名子集",
-  condition: {
-    join: "and",
-    expressions: ["true"],
-  },
+  activation: "true",
   subSets: [],
   rules: [],
 });
 
-function update() {
-  emits("update:modelValue", rows.value.subsets);
-}
-
 function copy(index: number) {
-  rows.value.subsets[index + 1].id = randomString(8);
+  subsets.value[index + 1].id = randomString(8);
 }
 </script>
 

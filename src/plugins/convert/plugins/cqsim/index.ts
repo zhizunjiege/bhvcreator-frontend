@@ -24,11 +24,23 @@ interface CQSIMMetaParam extends CQSIMParameter {
   };
 }
 interface CQSIMCondition {
-  "#comment": string[];
   Expression: string;
 }
 interface CQSIMConsequence {
-  Operation: {
+  Operation?: {
+    Target: string;
+    Operation: string;
+    Args: {
+      Expression: string;
+    };
+  }[];
+  Assignment?: {
+    Target: string;
+    Value: {
+      Expression: string;
+    };
+  }[];
+  ArrayOperation?: {
     Target: string;
     Operation: string;
     Args: {
@@ -73,7 +85,7 @@ interface CQSIMRuleSet {
 }
 
 export interface CQSIMExportOptions {
-  version: string;
+  reserved: never;
 }
 
 export interface CQSIMImportOptions {
@@ -91,6 +103,8 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
     "SubRuleSet",
     "Rule",
     "Operation",
+    "Assignment",
+    "ArrayOperation",
   ];
   private builder = new XMLBuilder({
     ignoreAttributes: false,
@@ -131,11 +145,7 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
   }
   private exportCondition(condition: Condition): CQSIMCondition {
     return {
-      "#comment": [condition.join, ...condition.expressions],
-      Expression: (condition.expressions.length > 1
-        ? condition.expressions.map((e) => `(${e})`)
-        : condition.expressions
-      ).join(` ${condition.join} `),
+      Expression: condition.expression,
     };
   }
   private exportConsequence(consequence: Consequence): CQSIMConsequence {
@@ -172,13 +182,12 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
         },
       });
     }
-    const condition = this.exportCondition(subset.condition);
-    if (condition.Expression && condition.Expression !== "true") {
+    if (subset.activation && subset.activation !== "true") {
       for (const s of subRuleSets) {
         if (s.Rules.Rule) {
           for (const r of s.Rules.Rule) {
             if (r.Condition.Expression) {
-              r.Condition.Expression = `(${condition.Expression}) and (${r.Condition.Expression})`;
+              r.Condition.Expression = `(${subset.activation}) and (${r.Condition.Expression})`;
             }
           }
         }
@@ -226,18 +235,14 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
   }
 
   public export_(ruleset: RuleSet, options: CQSIMExportOptions): string {
-    let RuleSet: CQSIMRuleSet;
-    switch (options.version) {
-      case "1.0":
-        RuleSet = this.exportRuleSet(ruleset);
-        break;
+    const RuleSet = this.exportRuleSet(ruleset);
+    switch (options.reserved) {
       default:
-        throw new Error(`不支持的导出版本：${options.version}`);
+        return this.builder.build({
+          "?xml": { "@version": "1.0", "@encoding": "UTF-8" },
+          RuleSet,
+        });
     }
-    return this.builder.build({
-      "?xml": { "@version": "1.0", "@encoding": "UTF-8" },
-      RuleSet,
-    });
   }
 
   private importParameter(param: CQSIMParameter): Parameter {
@@ -262,17 +267,30 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
   }
   private importCondition(condition: CQSIMCondition): Condition {
     return {
-      join: (condition["#comment"]?.[0] as "and" | "or") ?? "and",
-      expressions: condition["#comment"]?.slice(1) ?? [condition.Expression],
+      expression: condition.Expression,
     };
   }
   private importConsequence(consequence: CQSIMConsequence): Consequence {
-    return {
-      operations: consequence.Operation.map((o) => ({
+    const operations =
+      consequence.Operation?.map((o) => ({
         target: o.Target,
         method: o.Operation,
         value: o.Args.Expression,
-      })),
+      })) ?? [];
+    const assignments =
+      consequence.Assignment?.map((a) => ({
+        target: a.Target,
+        method: "assign",
+        value: a.Value.Expression,
+      })) ?? [];
+    const arrayOperations =
+      consequence.ArrayOperation?.map((o) => ({
+        target: o.Target,
+        method: o.Operation,
+        value: o.Args.Expression,
+      })) ?? [];
+    return {
+      operations: [...operations, ...assignments, ...arrayOperations],
     };
   }
   private importTypeDefine(typeDefine: CQSIMTypeDefine): TypeDefine {
@@ -295,10 +313,7 @@ export class CQSIMConvertPlugin implements ConvertChildPlugin {
       id: subRuleSet["#comment"]?.[0] ?? randomString(8),
       name: subRuleSet["#comment"]?.[1] ?? "子集",
       desc: subRuleSet["#comment"]?.[2] ?? "",
-      condition: {
-        join: "and",
-        expressions: ["true"],
-      },
+      activation: "true",
       subSets: [],
       rules: subRuleSet.Rules.Rule.map(this.importRule.bind(this)),
     };

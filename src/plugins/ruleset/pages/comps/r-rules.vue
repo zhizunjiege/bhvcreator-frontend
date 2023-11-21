@@ -1,6 +1,6 @@
 <template>
   <q-table
-    :rows="rows.rules"
+    :rows="rules"
     :columns="columns"
     :pagination="{ rowsPerPage: 0 }"
     flat
@@ -15,33 +15,27 @@
     </template>
     <template #body-cell-cond="scope">
       <q-td :props="scope">
-        <r-condition v-model="scope.row[scope.col.field]" title="规则前件" />
+        <r-condition v-model="scope.row[scope.col.field]" />
       </q-td>
     </template>
     <template #body-cell-cons="scope">
       <q-td :props="scope">
-        <r-consequence v-model="scope.row[scope.col.field]" title="规则后件" />
+        <r-consequence v-model="scope.row[scope.col.field]" />
       </q-td>
     </template>
     <template #body-cell-acts="scope">
       <q-td :props="scope">
         <r-actions
-          v-model="rows.rules"
+          v-model="rules"
           :row-index="scope.rowIndex"
           :template="ruleTemplate"
-          @update:model-value="update"
           @action:copy="copy"
         />
       </q-td>
     </template>
     <template #no-data>
       <div class="full-width flex justify-center">
-        <r-actions
-          v-model="rows.rules"
-          :template="ruleTemplate"
-          actions="add"
-          @update:model-value="update"
-        />
+        <r-actions v-model="rules" :template="ruleTemplate" actions="add" />
       </div>
     </template>
   </q-table>
@@ -59,29 +53,23 @@ import rConsequence from "./r-consequence.vue";
 const props = defineProps<{
   modelValue: Rule[];
 }>();
-const emits = defineEmits<{
-  (e: "update:modelValue", modelValue: Rule[]): void;
-}>();
 
-const rows = computed(() => ({
-  rules: props.modelValue,
-}));
+const rules = computed(() => props.modelValue);
 
-const columns = [
+const columns: QTableColumn[] = [
   { name: "name", label: "规则名称", field: "name", align: "center" },
   { name: "cond", label: "规则前件", field: "condition", align: "center" },
   { name: "cons", label: "规则后件", field: "consequence", align: "center" },
   { name: "desc", label: "规则描述", field: "desc", align: "center" },
   { name: "acts", label: "规则操作", field: "", align: "center" },
-] as QTableColumn[];
+];
 
 const ruleTemplate = () => ({
   id: randomString(8),
   name: "未命名规则",
   desc: "未命名规则",
   condition: {
-    join: "and",
-    expressions: ["true"],
+    expression: "true",
   },
   consequence: {
     assignments: [],
@@ -89,12 +77,8 @@ const ruleTemplate = () => ({
   },
 });
 
-function update() {
-  emits("update:modelValue", rows.value.rules);
-}
-
 function copy(index: number) {
-  rows.value.rules[index + 1].id = randomString(8);
+  rules.value[index + 1].id = randomString(8);
 }
 </script>
 

@@ -84,10 +84,9 @@ export const useRuleSetStore = defineStore("ruleset", {
         name: this.ruleset.name,
         version: this.ruleset.version,
         description: this.ruleset.description,
-        mode: "normal",
         xml,
       });
-      if (this.ruleset.id === 0) {
+      if (this.ruleset.id <= 0) {
         this.ruleset.id = res.lastrowid;
         this.ruleset.createTime = getTimestampString();
       }

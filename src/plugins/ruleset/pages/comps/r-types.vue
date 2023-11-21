@@ -11,11 +11,10 @@
           <q-card-section class="q-py-sm">
             <div class="full-width flex justify-center">
               <r-actions
-                v-model="rows.types"
+                v-model="types"
                 :row-index="selected"
                 :template="typeTemplate"
-                :actions="rows.types.length > 0 ? 'add/copy/del' : 'add'"
-                @update:model-value="update"
+                :actions="types.length > 0 ? 'add/copy/del' : 'add'"
                 @action:del="selected = 0"
               />
             </div>
@@ -24,7 +23,7 @@
         <q-separator />
         <q-card flat class="col-grow">
           <q-card-section class="fit q-py-sm q-px-none">
-            <q-scroll-area v-if="rows.types.length > 0" class="fit">
+            <q-scroll-area v-if="types.length > 0" class="fit">
               <q-tabs
                 v-model="selected"
                 dense
@@ -33,7 +32,7 @@
                 active-color="accent"
               >
                 <q-tab
-                  v-for="(r, i) in rows.types"
+                  v-for="(r, i) in types"
                   :key="i"
                   :name="i"
                   :label="r.type"
@@ -45,18 +44,17 @@
       </div>
     </template>
     <template #after>
-      <template v-if="rows.types.length > 0">
+      <template v-if="types.length > 0">
         <q-markup-table flat separator="horizontal" class="r-table">
           <tbody>
             <tr>
               <td>类型名称</td>
               <td>
                 <q-input
-                  v-model="rows.types[selected].type"
+                  v-model="types[selected].type"
                   dense
                   filled
                   class="full-width"
-                  @update:model-value="update"
                 />
               </td>
             </tr>
@@ -64,7 +62,7 @@
         </q-markup-table>
         <q-separator color="transparent" class="q-my-xs" />
         <q-table
-          :rows="rows.types[selected].variables"
+          :rows="types[selected].variables"
           :columns="variableColumns"
           :pagination="{ rowsPerPage: 0 }"
           flat
@@ -80,20 +78,18 @@
           <template #body-cell-acts="scope">
             <q-td :props="scope">
               <r-actions
-                v-model="rows.types[selected].variables"
+                v-model="types[selected].variables"
                 :row-index="scope.rowIndex"
                 :template="variableTemplate"
-                @update:model-value="update"
               />
             </q-td>
           </template>
           <template #no-data>
             <div class="full-width flex justify-center">
               <r-actions
-                v-model="rows.types[selected].variables"
+                v-model="types[selected].variables"
                 :template="variableTemplate"
                 actions="add"
-                @update:model-value="update"
               />
             </div>
           </template>
@@ -119,42 +115,33 @@ import rActions from "./r-actions.vue";
 const props = defineProps<{
   modelValue: TypeDefine[];
 }>();
-const emits = defineEmits<{
-  (e: "update:modelValue", modelValue: TypeDefine[]): void;
-}>();
 
 const percent = ref(20);
 
 const selected = ref(0);
 
-const rows = computed(() => ({
-  types: props.modelValue,
-}));
+const types = computed(() => props.modelValue);
 
 const typeTemplate = () => ({
   type: "Type",
   variables: [],
 });
 
-const variableColumns = [
+const variableColumns: QTableColumn[] = [
   { name: "name", label: "属性", field: "name", align: "center" },
   { name: "type", label: "类型", field: "type", align: "center" },
   { name: "acts", label: "操作", field: "", align: "center" },
-] as QTableColumn[];
+];
 
 const variableTemplate = () => ({
   name: "",
   type: "",
 });
-
-function update() {
-  emits("update:modelValue", rows.value.types);
-}
 </script>
 
 <style scoped lang="scss">
 .r-splitter {
-  height: 40vh;
+  height: 75vh;
 }
 :deep(.r-table) {
   table {

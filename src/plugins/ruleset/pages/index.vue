@@ -43,8 +43,10 @@
             no-nodes-label="无规则子集"
             no-results-label="无匹配结果"
             class="fit scroll"
-          >
-          </q-tree>
+            @update:selected="
+              tab = selected === store.ruleset.id ? 'infos' : 'rules'
+            "
+          />
         </template>
       </q-splitter>
     </template>
@@ -71,6 +73,23 @@
                 清空
               </q-tooltip>
             </q-btn>
+            <q-btn flat round size="sm" class="invisible q-ml-md" />
+            <q-space />
+            <q-tabs
+              v-model="tab"
+              dense
+              active-color="accent"
+              indicator-color="accent"
+            >
+              <template v-if="selected === store.ruleset.id">
+                <q-tab name="infos" label="基本信息" />
+                <q-tab name="types" label="类型定义" />
+                <!-- <q-tab name="funcs" label="函数定义" /> -->
+                <q-tab name="params" label="参数定义" />
+              </template>
+              <q-tab name="subsets" label="子集管理" />
+              <q-tab name="rules" label="规则管理" />
+            </q-tabs>
             <q-space />
             <q-btn
               :loading="saving"
@@ -78,7 +97,7 @@
               round
               size="sm"
               icon="bi-bug"
-              class="ui-clickable"
+              class="q-mr-md ui-clickable"
               @click="valid"
             >
               <q-tooltip anchor="top middle" self="center middle">
@@ -91,7 +110,7 @@
               round
               size="sm"
               icon="bi-save"
-              class="q-ml-md ui-clickable"
+              class="ui-clickable"
               @click="save"
             >
               <q-tooltip anchor="top middle" self="center middle">
@@ -101,66 +120,46 @@
           </div>
         </template>
         <template #after>
-          <q-card
-            v-show="selected == store.ruleset.id"
-            flat
-            class="q-mx-auto transparent r-card"
-          >
-            <q-card-section class="text-center text-subtitle1">
-              基本信息
-            </q-card-section>
-            <q-card-section>
-              <r-infos v-model="store.ruleset" />
-            </q-card-section>
-            <q-card-section class="text-center text-subtitle1">
-              类型定义
-            </q-card-section>
-            <q-card-section>
-              <r-types v-model="store.ruleset.typeDefines" />
-            </q-card-section>
-            <q-card-section class="text-center text-subtitle1">
-              函数定义
-            </q-card-section>
-            <q-card-section>
-              <r-funcs v-model="store.ruleset.funcDefines" />
-            </q-card-section>
-            <q-card-section class="text-center text-subtitle1">
-              参数定义
-            </q-card-section>
-            <q-card-section>
-              <p class="text-subtitle2">输入参数</p>
-              <r-params v-model="store.ruleset.metaInfo.inputs" />
-            </q-card-section>
-            <q-card-section>
-              <p class="text-subtitle2">输出参数</p>
-              <r-params v-model="store.ruleset.metaInfo.outputs" />
-            </q-card-section>
-            <q-card-section>
-              <p class="text-subtitle2">缓存参数</p>
-              <r-params v-model="store.ruleset.metaInfo.caches" />
-            </q-card-section>
-            <q-card-section>
-              <p class="text-subtitle2">数值常量</p>
-              <r-params v-model="store.ruleset.metaInfo.consts" />
-            </q-card-section>
-            <q-card-section>
-              <p class="text-subtitle2">中间变量</p>
-              <r-params v-model="store.ruleset.metaInfo.temps" />
-            </q-card-section>
-          </q-card>
           <q-card flat class="q-mx-auto transparent r-card">
-            <q-card-section class="text-center text-subtitle1">
-              子集管理
-            </q-card-section>
-            <q-card-section>
-              <r-subsets v-if="node" v-model="node.subSets" />
-            </q-card-section>
-            <q-card-section class="text-center text-subtitle1">
-              规则管理
-            </q-card-section>
-            <q-card-section>
-              <r-rules v-if="node" v-model="node.rules" />
-            </q-card-section>
+            <q-tab-panels v-model="tab" animated class="transparent">
+              <q-tab-panel name="infos">
+                <r-infos :model-value="store.ruleset" />
+              </q-tab-panel>
+              <q-tab-panel name="types">
+                <r-types :model-value="store.ruleset.typeDefines" />
+              </q-tab-panel>
+              <!-- <q-tab-panel name="funcs">
+                <r-funcs :model-value="store.ruleset.funcDefines" />
+              </q-tab-panel> -->
+              <q-tab-panel name="params">
+                <q-card-section>
+                  <p class="text-center text-subtitle2">输入参数</p>
+                  <r-params :model-value="store.ruleset.metaInfo.inputs" />
+                </q-card-section>
+                <q-card-section>
+                  <p class="text-center text-subtitle2">输出参数</p>
+                  <r-params :model-value="store.ruleset.metaInfo.outputs" />
+                </q-card-section>
+                <q-card-section>
+                  <p class="text-center text-subtitle2">数值常量</p>
+                  <r-params :model-value="store.ruleset.metaInfo.consts" />
+                </q-card-section>
+                <q-card-section>
+                  <p class="text-center text-subtitle2">缓存参数</p>
+                  <r-params :model-value="store.ruleset.metaInfo.caches" />
+                </q-card-section>
+                <q-card-section>
+                  <p class="text-center text-subtitle2">中间变量</p>
+                  <r-params :model-value="store.ruleset.metaInfo.temps" />
+                </q-card-section>
+              </q-tab-panel>
+              <q-tab-panel name="subsets">
+                <r-subsets v-if="node" :model-value="node.subSets" />
+              </q-tab-panel>
+              <q-tab-panel name="rules">
+                <r-rules v-if="node" :model-value="node.rules" />
+              </q-tab-panel>
+            </q-tab-panels>
           </q-card>
         </template>
       </q-splitter>
@@ -174,7 +173,7 @@ import { useRuleSetStore } from "../stores";
 
 import rInfos from "./comps/r-infos.vue";
 import rTypes from "./comps/r-types.vue";
-import rFuncs from "./comps/r-funcs.vue";
+// import rFuncs from "./comps/r-funcs.vue";
 import rParams from "./comps/r-params.vue";
 import rSubsets from "./comps/r-subsets.vue";
 import rRules from "./comps/r-rules.vue";
@@ -188,8 +187,10 @@ const percent = ref(15);
 const filter = ref("");
 const nodes = computed(() => [store.ruleset]);
 const selected = ref(store.ruleset.id);
-const tree = ref(null as Nullable<QTree>);
+const tree = ref<Nullable<QTree>>(null);
 const node = computed(() => tree.value?.getNodeByKey(selected.value));
+
+const tab = ref("infos");
 
 function clear() {
   store.$reset();
@@ -244,7 +245,7 @@ watch(
   () => route.query.id,
   async (val) => {
     if (val) {
-      const id = parseInt(route.query.id as string);
+      const id = parseInt(val as string);
       if (id) {
         await store.load(id);
         selected.value = store.ruleset.id;

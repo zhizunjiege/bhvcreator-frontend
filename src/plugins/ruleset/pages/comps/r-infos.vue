@@ -4,25 +4,13 @@
       <tr>
         <td>名称</td>
         <td>
-          <q-input
-            v-model="attr.name"
-            dense
-            filled
-            class="full-width"
-            @update:model-value="update"
-          />
+          <q-input v-model="attr.name" dense filled class="full-width" />
         </td>
       </tr>
       <tr>
         <td>版本</td>
         <td>
-          <q-input
-            v-model="attr.version"
-            dense
-            filled
-            class="full-width"
-            @update:model-value="update"
-          />
+          <q-input v-model="attr.version" dense filled class="full-width" />
         </td>
       </tr>
       <tr>
@@ -60,7 +48,6 @@
             clearable
             type="textarea"
             class="full-width"
-            @update:model-value="update"
           />
         </td>
       </tr>
@@ -74,15 +61,8 @@ import { RuleSetAttr } from "../../stores";
 const props = defineProps<{
   modelValue: RuleSetAttr;
 }>();
-const emits = defineEmits<{
-  (e: "update:modelValue", modelValue: RuleSetAttr): void;
-}>();
 
 const attr = computed(() => props.modelValue);
-
-function update() {
-  emits("update:modelValue", attr.value);
-}
 </script>
 
 <style scoped lang="scss">

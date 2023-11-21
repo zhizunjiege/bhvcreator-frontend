@@ -14,8 +14,7 @@ export interface MetaParam extends Parameter {
   value: string;
 }
 export interface Condition {
-  join: "and" | "or";
-  expressions: string[];
+  expression: string;
 }
 export interface Consequence {
   operations: {
@@ -48,7 +47,7 @@ export interface SubSet {
   id: string;
   name: string;
   desc: string;
-  condition: Condition;
+  activation: string;
   subSets: SubSet[];
   rules: Rule[];
 }
@@ -75,8 +74,7 @@ interface XmlMetaParam extends XmlParameter {
   Value: string;
 }
 interface XmlCondition {
-  "@join": "and" | "or";
-  Expression?: string[];
+  Expression?: string;
 }
 interface XmlConsequence {
   Operation?: {
@@ -111,7 +109,7 @@ interface XmlSubSet {
   "@id": string;
   "@name": string;
   "@desc": string;
-  Condition: XmlCondition;
+  Activation: string;
   SubSets: {
     SubSet?: XmlSubSet[];
   };
@@ -170,7 +168,6 @@ class RuleSetPlugin implements Plugin {
     "Temp",
     "SubSet",
     "Rule",
-    "Expression",
     "Operation",
   ];
   private builder = new XMLBuilder({
@@ -201,8 +198,7 @@ class RuleSetPlugin implements Plugin {
   }
   private buildCondition(condition: Condition): XmlCondition {
     return {
-      "@join": condition.join,
-      Expression: condition.expressions,
+      Expression: condition.expression,
     };
   }
   private buildConsequence(consequence: Consequence): XmlConsequence {
@@ -247,7 +243,7 @@ class RuleSetPlugin implements Plugin {
       "@id": subSet.id,
       "@name": subSet.name,
       "@desc": subSet.desc,
-      Condition: this.buildCondition(subSet.condition),
+      Activation: subSet.activation,
       SubSets: {
         SubSet: subSet.subSets.map(this.buildSubSet.bind(this)),
       },
@@ -314,8 +310,7 @@ class RuleSetPlugin implements Plugin {
   }
   private parseCondition(condition: XmlCondition): Condition {
     return {
-      join: condition["@join"],
-      expressions: condition.Expression ?? [],
+      expression: condition.Expression ?? "",
     };
   }
   private parseConsequence(consequence: XmlConsequence): Consequence {
@@ -359,7 +354,7 @@ class RuleSetPlugin implements Plugin {
       id: subSet["@id"],
       name: subSet["@name"],
       desc: subSet["@desc"],
-      condition: this.parseCondition(subSet.Condition),
+      activation: subSet.Activation,
       subSets: subSet.SubSets.SubSet?.map(this.parseSubSet.bind(this)) ?? [],
       rules: subSet.Rules.Rule?.map(this.parseRule.bind(this)) ?? [],
     };

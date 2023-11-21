@@ -11,11 +11,10 @@
           <q-card-section class="q-py-sm">
             <div class="full-width flex justify-center">
               <r-actions
-                v-model="rows.funcs"
+                v-model="funcs"
                 :row-index="selected"
                 :template="funcTemplate"
-                :actions="rows.funcs.length > 0 ? 'add/copy/del' : 'add'"
-                @update:model-value="update"
+                :actions="funcs.length > 0 ? 'add/copy/del' : 'add'"
                 @action:del="selected = 0"
               />
             </div>
@@ -24,7 +23,7 @@
         <q-separator />
         <q-card flat class="col-grow">
           <q-card-section class="fit q-py-sm q-px-none">
-            <q-scroll-area v-if="rows.funcs.length > 0" class="fit">
+            <q-scroll-area v-if="funcs.length > 0" class="fit">
               <q-tabs
                 v-model="selected"
                 dense
@@ -33,7 +32,7 @@
                 active-color="accent"
               >
                 <q-tab
-                  v-for="(r, i) in rows.funcs"
+                  v-for="(r, i) in funcs"
                   :key="i"
                   :name="i"
                   :label="r.symbol"
@@ -45,14 +44,14 @@
       </div>
     </template>
     <template #after>
-      <template v-if="rows.funcs.length > 0">
+      <template v-if="funcs.length > 0">
         <q-markup-table flat separator="horizontal" class="r-table">
           <tbody>
             <tr>
               <td>函数类型</td>
               <td>
                 <q-select
-                  v-model="rows.funcs[selected].type"
+                  v-model="funcs[selected].type"
                   :options="['normal', 'operator']"
                   dense
                   filled
@@ -60,17 +59,15 @@
                   hide-dropdown-icon
                   popup-content-class="text-center"
                   class="full-width"
-                  @update:model-value="update"
                 />
               </td>
               <td>函数符号</td>
               <td>
                 <q-input
-                  v-model="rows.funcs[selected].symbol"
+                  v-model="funcs[selected].symbol"
                   dense
                   filled
                   class="full-width"
-                  @update:model-value="update"
                 />
               </td>
             </tr>
@@ -78,7 +75,7 @@
         </q-markup-table>
         <q-separator color="transparent" class="q-my-xs" />
         <q-table
-          :rows="rows.funcs[selected].params"
+          :rows="funcs[selected].params"
           :columns="paramColumns"
           :pagination="{ rowsPerPage: 0 }"
           flat
@@ -94,20 +91,18 @@
           <template #body-cell-acts="scope">
             <q-td :props="scope">
               <r-actions
-                v-model="rows.funcs[selected].params"
+                v-model="funcs[selected].params"
                 :row-index="scope.rowIndex"
                 :template="paramTemplate"
-                @update:model-value="update"
               />
             </q-td>
           </template>
           <template #no-data>
             <div class="full-width flex justify-center">
               <r-actions
-                v-model="rows.funcs[selected].params"
+                v-model="funcs[selected].params"
                 :template="paramTemplate"
                 actions="add"
-                @update:model-value="update"
               />
             </div>
           </template>
@@ -119,11 +114,10 @@
               <td>返回值类型</td>
               <td>
                 <q-input
-                  v-model="rows.funcs[selected].return.type"
+                  v-model="funcs[selected].return.type"
                   dense
                   filled
                   class="full-width"
-                  @update:model-value="update"
                 />
               </td>
             </tr>
@@ -131,11 +125,10 @@
               <td>返回值表达式</td>
               <td>
                 <q-input
-                  v-model="rows.funcs[selected].return.value"
+                  v-model="funcs[selected].return.value"
                   dense
                   filled
                   class="full-width"
-                  @update:model-value="update"
                 />
               </td>
             </tr>
@@ -162,17 +155,12 @@ import rActions from "./r-actions.vue";
 const props = defineProps<{
   modelValue: FuncDefine[];
 }>();
-const emits = defineEmits<{
-  (e: "update:modelValue", modelValue: FuncDefine[]): void;
-}>();
 
 const percent = ref(20);
 
 const selected = ref(0);
 
-const rows = computed(() => ({
-  funcs: props.modelValue,
-}));
+const funcs = computed(() => props.modelValue);
 
 const funcTemplate = () => ({
   type: "normal",
@@ -183,25 +171,21 @@ const funcTemplate = () => ({
     value: "",
   },
 });
-const paramColumns = [
+const paramColumns: QTableColumn[] = [
   { name: "name", label: "参数", field: "name", align: "center" },
   { name: "type", label: "类型", field: "type", align: "center" },
   { name: "acts", label: "操作", field: "", align: "center" },
-] as QTableColumn[];
+];
 
 const paramTemplate = () => ({
   name: "",
   type: "",
 });
-
-function update() {
-  emits("update:modelValue", rows.value.funcs);
-}
 </script>
 
 <style scoped lang="scss">
 .r-splitter {
-  height: 40vh;
+  height: 75vh;
 }
 :deep(.r-table) {
   table {

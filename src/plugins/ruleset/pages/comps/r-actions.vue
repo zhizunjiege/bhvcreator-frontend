@@ -85,7 +85,6 @@ const props = withDefaults(
   }
 );
 const emits = defineEmits<{
-  (e: "update:modelValue", modelValue: any[]): void;
   (e: "action:add", index: number): void;
   (e: "action:up", index: number): void;
   (e: "action:down", index: number): void;
@@ -96,21 +95,15 @@ const emits = defineEmits<{
 
 const rows = computed(() => props.modelValue);
 
-function update() {
-  emits("update:modelValue", rows.value);
-}
-
 function add() {
   const i = props.rowIndex;
   rows.value.splice(i + 1, 0, props.template());
-  update();
   emits("action:add", i);
 }
 function up() {
   const i = props.rowIndex;
   if (i > 0) {
     [rows.value[i], rows.value[i - 1]] = [rows.value[i - 1], rows.value[i]];
-    update();
     emits("action:up", i);
   }
 }
@@ -118,20 +111,17 @@ function down() {
   const i = props.rowIndex;
   if (i < rows.value.length - 1) {
     [rows.value[i], rows.value[i + 1]] = [rows.value[i + 1], rows.value[i]];
-    update();
     emits("action:down", i);
   }
 }
 function copy() {
   const i = props.rowIndex;
   rows.value.splice(i + 1, 0, deepCopy(rows.value[i]));
-  update();
   emits("action:copy", i);
 }
 function del() {
   const i = props.rowIndex;
   rows.value.splice(i, 1);
-  update();
   emits("action:del", i);
 }
 </script>

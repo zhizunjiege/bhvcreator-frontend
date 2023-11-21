@@ -8,7 +8,7 @@
   <q-dialog v-model="dialogShow">
     <q-card flat class="q-mx-auto bg-secondary r-card">
       <q-card-section class="text-center text-subtitle1">
-        {{ props.title }}
+        规则后件
       </q-card-section>
       <q-card-section>
         <q-table
@@ -60,7 +60,6 @@
                 v-model="consequence.operations"
                 :row-index="scope.rowIndex"
                 :template="operationTemplate"
-                @update:model-value="update"
               />
             </q-td>
           </template>
@@ -70,7 +69,6 @@
                 v-model="consequence.operations"
                 :template="operationTemplate"
                 actions="add"
-                @update:model-value="update"
               />
             </div>
           </template>
@@ -89,21 +87,17 @@ import rActions from "./r-actions.vue";
 
 const props = defineProps<{
   modelValue: Consequence;
-  title: string;
-}>();
-const emits = defineEmits<{
-  (e: "update:modelValue", modelValue: Consequence): void;
 }>();
 
 const consequence = computed(() => props.modelValue);
 
-const operationColumns = [
+const operationColumns: QTableColumn[] = [
   { name: "index", label: "序号", field: "", align: "center" },
   { name: "target", label: "目标", field: "target", align: "center" },
   { name: "method", label: "方法", field: "method", align: "center" },
   { name: "value", label: "取值", field: "value", align: "center" },
   { name: "actions", label: "操作", field: "", align: "center" },
-] as QTableColumn[];
+];
 
 const operationTemplate = () => ({
   target: "",
@@ -127,10 +121,6 @@ const displayText = computed(() => {
       .join("; ") || "无"
   );
 });
-
-function update() {
-  emits("update:modelValue", consequence.value);
-}
 </script>
 
 <style scoped lang="scss">

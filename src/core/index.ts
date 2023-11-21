@@ -8,27 +8,12 @@ export type RulesetTable = {
   description: string;
   create_time?: string;
   update_time?: string;
-  mode: string;
-  xml: string;
-};
-
-// compose table struct
-export type ComposeTable = {
-  id: number;
-  name: string;
-  version: string;
-  description: string;
-  create_time?: string;
-  update_time?: string;
-  ruleset: number;
-  type: string;
   xml: string;
 };
 
 // database tables full structs
 export type DBTables = {
   ruleset: RulesetTable;
-  compose: ComposeTable;
 };
 
 // plugin interface
@@ -51,9 +36,9 @@ export interface Plugin {
 export class Core {
   private addr = "/api";
 
-  public plugins = {} as {
+  public plugins: {
     [key: string]: Plugin;
-  };
+  } = {};
 
   public provide(name: string, plugin: Plugin) {
     this.plugins[name] = plugin;
@@ -68,12 +53,13 @@ export class Core {
 
   public async select<T extends keyof DBTables>(
     table: T,
-    columns: string[] = [],
-    options: Partial<DBTables[T]> = {}
+    columns: (keyof DBTables[T])[] = [],
+    options: { [key in keyof DBTables[T]]?: DBTables[T][key] } = {},
+    conjunc: "AND" | "OR" = "AND"
   ): Promise<DBTables[T][]> {
     const colArgs = columns.map((v) => `columns=${v as string}`);
     const optArgs = Object.entries(options).map(([k, v]) => `${k}=${v}`);
-    const args = [...colArgs, ...optArgs].join("&");
+    const args = [...colArgs, ...optArgs, `conjunc=${conjunc}`].join("&");
     const response = await fetch(`${this.addr}/db/${table}?${args}`, {
       method: "GET",
     });
@@ -87,7 +73,7 @@ export class Core {
 
   public async insert<T extends keyof DBTables>(
     table: T,
-    data: DBTables[T]
+    data: Modified<DBTables[T], { id?: number }>
   ): Promise<{ lastrowid: number }> {
     const row = { ...data } as DBTables[T];
     const response = await fetch(`${this.addr}/db/${table}`, {
@@ -106,7 +92,7 @@ export class Core {
 
   public async update<T extends keyof DBTables>(
     table: T,
-    data: Partial<DBTables[T]>
+    data: Modified<Partial<DBTables[T]>, { id: number }>
   ): Promise<{ rowcount: number }> {
     const row = { ...data } as DBTables[T];
     const response = await fetch(`${this.addr}/db/${table}`, {
@@ -128,17 +114,23 @@ export class Core {
     data: Partial<DBTables[T]>
   ): Promise<{ lastrowid: number; rowcount: number }> {
     const id = data.id ?? -1;
-    if (id > 0) {
-      const rst = await this.update(table, data);
-      return {
-        lastrowid: id,
-        rowcount: rst.rowcount,
-      };
-    } else {
-      const rst = await this.insert(table, data as DBTables[T]);
+    if (id <= 0) {
+      const rst = await this.insert(
+        table,
+        data as Modified<DBTables[T], { id?: number }>
+      );
       return {
         lastrowid: rst.lastrowid,
         rowcount: 1,
+      };
+    } else {
+      const rst = await this.update(
+        table,
+        data as Modified<Partial<DBTables[T]>, { id: number }>
+      );
+      return {
+        lastrowid: id,
+        rowcount: rst.rowcount,
       };
     }
   }
