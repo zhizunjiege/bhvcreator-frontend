@@ -30,7 +30,7 @@ export interface OptimizeSample {
   }[];
 }
 
-export const useOptimizeStore = defineStore("ruleset", {
+export const useOptimizeStore = defineStore("optimize", {
   state: () => ({
     id: 0,
     ruleset: "",
