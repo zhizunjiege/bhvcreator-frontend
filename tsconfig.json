@@ -4,12 +4,12 @@
     "paths": {
       "~/*": ["src/*"]
     },
-    "target": "es2016",
+    "target": "es2020",
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "sourceMap": true,
-    "lib": ["es2016", "dom"],
+    "lib": ["es2020", "dom"],
     "strict": true,
     "noUnusedLocals": true,
     "useDefineForClassFields": true,
