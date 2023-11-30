@@ -8,11 +8,14 @@
 const router = useRouter();
 const route = useRoute();
 
-if (route.query.id) {
-  router.push(route.path + "/export?id=" + route.query.id);
-} else {
-  router.push(route.path + "/import");
-}
+onActivated(() => {
+  const path = route.path + (route.path.endsWith("/") ? "" : "/");
+  if (route.query.id) {
+    router.push(`${path}export?id=${route.query.id}`);
+  } else {
+    router.push(`${path}import`);
+  }
+});
 </script>
 
 <style scoped lang="scss"></style>

@@ -7,7 +7,12 @@
 <script setup lang="ts">
 const router = useRouter();
 const route = useRoute();
-router.push(route.path + "/ruleset");
+
+onActivated(() => {
+  const path = route.path + (route.path.endsWith("/") ? "" : "/");
+  router.push(`${path}ruleset`);
+  console.log(route);
+});
 </script>
 
 <style scoped lang="scss"></style>

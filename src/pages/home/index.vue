@@ -4,10 +4,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
-const router = useRouter();
-
-router.push("/home/ruleset");
-</script>
+<script setup lang="ts"></script>
 
 <style scoped lang="scss"></style>
+
+<route lang="yaml">
+redirect:
+  name: manager
+</route>
