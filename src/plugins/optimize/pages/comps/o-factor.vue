@@ -244,13 +244,15 @@ const editor = ref<
   }>
 >(null);
 
-if (route.query.id) {
-  const id_ = parseInt(route.query.id as string);
-  if (id_) {
-    store.id = id_;
-    loadRuleset();
+onActivated(() => {
+  if (route.query.id) {
+    const id_ = parseInt(route.query.id as string);
+    if (id_) {
+      store.id = id_;
+      loadRuleset();
+    }
   }
-}
+});
 </script>
 
 <style scoped lang="scss">

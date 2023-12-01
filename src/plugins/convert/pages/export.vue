@@ -182,13 +182,15 @@ async function export_() {
   }
 }
 
-if (route.query.id) {
-  const id_ = parseInt(route.query.id as string);
-  if (id_) {
-    id.value = id_;
-    getRaw();
+onActivated(() => {
+  if (route.query.id) {
+    const id_ = parseInt(route.query.id as string);
+    if (id_) {
+      id.value = id_;
+      getRaw();
+    }
   }
-}
+});
 </script>
 
 <style scoped lang="scss">
