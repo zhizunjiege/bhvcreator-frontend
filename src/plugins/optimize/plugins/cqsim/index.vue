@@ -290,6 +290,9 @@ const scenarios = ref([] as Awaited<ReturnType<typeof getScenarioList>>);
 const expdesigns = ref([] as Awaited<ReturnType<typeof getExpDesignList>>);
 
 async function getScenariosAndExpDesigns() {
+  if (!options.value.resAddr || !options.value.xToken) {
+    return;
+  }
   try {
     scenarios.value = await getScenarioList(
       options.value.resAddr,
